@@ -10,7 +10,7 @@ export default async function OnboardingPage() {
   const [profile, goal] = await Promise.all([getProfile(), getActiveGoal()]);
 
   // Si ya completó el onboarding y tiene meta vigente, no lo repitas.
-  if (profile?.onboarding_completed && goal) {
+  if (profile?.height_cm && goal) {
     redirect("/dashboard");
   }
 

@@ -6,7 +6,7 @@ export default async function Home() {
   if (!user) redirect("/login");
 
   const [profile, goal] = await Promise.all([getProfile(), getActiveGoal()]);
-  if (!profile?.onboarding_completed || !goal) redirect("/onboarding");
+  if (!profile?.height_cm || !goal) redirect("/onboarding");
 
   redirect("/dashboard");
 }

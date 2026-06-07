@@ -3,7 +3,12 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { NutritionGoal, Profile } from "@/lib/types";
+import type { DailyMacros, NutritionGoal, Profile } from "@/lib/types";
+
+/** Fecha de hoy en formato YYYY-MM-DD (zona del servidor). */
+export function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 /**
  * Data Access Layer: centraliza la verificación de sesión y las lecturas de
@@ -68,9 +73,35 @@ export const requireOnboarded = cache(async () => {
   const user = await requireUser();
   const [profile, goal] = await Promise.all([getProfile(), getActiveGoal()]);
 
-  if (!profile?.onboarding_completed || !goal) {
+  // No hay flag `onboarding_completed` en el schema: consideramos el onboarding
+  // completo cuando hay perfil con datos básicos y una meta de nutrición vigente.
+  if (!profile?.height_cm || !goal) {
     redirect("/onboarding");
   }
 
   return { user, profile, goal };
 });
+
+/** Consumo agregado de hoy (vista v_daily_macros), o null si no hay registros. */
+export const getTodayMacros = cache(async (): Promise<DailyMacros | null> => {
+  const user = await getUser();
+  if (!user) return null;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("v_daily_macros")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("log_date", today())
+    .maybeSingle();
+
+  return (data as DailyMacros) ?? null;
+});
+
+/** ¿El usuario completó el onboarding? (perfil con datos + meta vigente) */
+export function isOnboarded(
+  profile: { height_cm: number | null } | null,
+  goal: unknown | null
+): boolean {
+  return Boolean(profile?.height_cm && goal);
+}

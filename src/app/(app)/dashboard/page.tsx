@@ -12,7 +12,7 @@ export default async function DashboardPage() {
   const firstName = profile.full_name?.split(" ")[0] ?? "Hola";
 
   const macros = [
-    { label: "Calorías", value: goal.kcal, unit: "kcal" },
+    { label: "Calorías", value: goal.kcal_target, unit: "kcal" },
     { label: "Proteína", value: goal.protein_g, unit: "g" },
     { label: "Carbos", value: goal.carbs_g, unit: "g" },
     { label: "Grasa", value: goal.fat_g, unit: "g" },

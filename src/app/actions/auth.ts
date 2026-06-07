@@ -61,7 +61,7 @@ export async function signup(
 
   const { full_name, email, password } = parsed.data;
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { full_name } },
@@ -77,9 +77,19 @@ export async function signup(
     };
   }
 
-  // Si la confirmación por email está desactivada, ya hay sesión → onboarding.
-  // Si está activada, signUp no crea sesión: el proxy lo mandará a /login.
-  redirect("/onboarding");
+  // Supabase, con confirmación activada, devuelve un user con identities vacío
+  // cuando el correo ya existe (sin lanzar error, para no filtrar usuarios).
+  if (data.user && data.user.identities?.length === 0) {
+    return { ok: false, error: "Ese correo ya está registrado." };
+  }
+
+  // Confirmación de email desactivada → hay sesión → directo al onboarding.
+  if (data.session) {
+    redirect("/onboarding");
+  }
+
+  // Confirmación activada → no hay sesión todavía: avisa que revise su correo.
+  return { ok: true };
 }
 
 export async function signOut() {

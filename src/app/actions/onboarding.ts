@@ -52,7 +52,6 @@ export async function completeOnboarding(
       birth_date: d.birth_date,
       height_cm: d.height_cm,
       activity_level: d.activity_level,
-      onboarding_completed: true,
     },
     { onConflict: "id" }
   );
@@ -72,7 +71,7 @@ export async function completeOnboarding(
   // 3. Crear la nueva meta vigente.
   const { error: goalError } = await supabase.from("nutrition_goals").insert({
     user_id: user.id,
-    kcal: d.kcal,
+    kcal_target: d.kcal,
     protein_g: d.protein_g,
     carbs_g: d.carbs_g,
     fat_g: d.fat_g,

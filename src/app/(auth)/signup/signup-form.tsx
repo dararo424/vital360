@@ -10,6 +10,23 @@ import { Label } from "@/components/ui/label";
 export function SignupForm() {
   const [state, action, pending] = useActionState(signup, null);
 
+  if (state?.ok) {
+    return (
+      <div className="space-y-3 text-center">
+        <p className="text-sm">
+          ¡Cuenta creada! Te enviamos un correo de confirmación. Ábrelo para
+          activar tu cuenta y luego inicia sesión.
+        </p>
+        <Link
+          href="/login"
+          className="inline-block font-medium text-primary hover:underline"
+        >
+          Ir a iniciar sesión
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <form action={action} className="space-y-4">
       <div className="space-y-1.5">
