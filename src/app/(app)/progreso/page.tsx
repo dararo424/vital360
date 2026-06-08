@@ -9,9 +9,10 @@ import { DeleteMetricButton } from "./metric-actions";
 export const metadata: Metadata = { title: "Progreso · Vital360" };
 
 export default async function ProgresoPage() {
-  await requireOnboarded();
+  const { profile } = await requireOnboarded();
   const metrics = await getBodyMetrics(180); // ascendente por fecha
   const history = [...metrics].reverse();
+  const adaptive = (profile as { adaptive?: boolean | null }).adaptive ?? false;
 
   return (
     <div className="space-y-5">
@@ -23,6 +24,12 @@ export default async function ProgresoPage() {
         </CardHeader>
         <CardContent>
           <ProgressForm metrics={metrics} />
+          {adaptive && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              🔄 Modo adaptable activo: al guardar tu peso, tu meta de calorías se
+              recalcula sola.
+            </p>
+          )}
         </CardContent>
       </Card>
 

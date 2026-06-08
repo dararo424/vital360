@@ -67,7 +67,11 @@ export function ProgressForm({ metrics }: { metrics: BodyMetric[] }) {
     setMsg(null);
     start(async () => {
       const res = await saveBodyMetric({ measured_at: date, ...fields });
-      if (res && res.ok) setMsg({ ok: true, text: "Guardado ✓" });
+      if (res && res.ok)
+        setMsg({
+          ok: true,
+          text: res.recalced ? "Guardado ✓ · tu meta se actualizó" : "Guardado ✓",
+        });
       else if (res) setMsg({ ok: false, text: res.error });
     });
   }
