@@ -23,7 +23,7 @@ export default async function OnboardingPage() {
     "";
 
   return (
-    <main className="min-h-dvh bg-muted/30 px-4 py-10">
+    <main className="bg-app-gradient min-h-dvh px-4 py-10">
       <SmartOnboarding defaultName={defaultName} />
     </main>
   );

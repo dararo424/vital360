@@ -31,11 +31,18 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#16a34a",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#16a34a" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e1a14" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
 };
+
+// Aplica el modo oscuro según la preferencia del sistema, antes del primer
+// pintado (sin parpadeo) y reacciona a cambios en vivo.
+const themeScript = `(function(){try{var m=window.matchMedia('(prefers-color-scheme: dark)');function a(){document.documentElement.classList.toggle('dark',m.matches);}a();m.addEventListener('change',a);}catch(e){}})();`;
 
 export default function RootLayout({
   children,
@@ -46,8 +53,12 @@ export default function RootLayout({
     <html
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {children}
+      </body>
     </html>
   );
 }

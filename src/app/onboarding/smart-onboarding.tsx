@@ -177,9 +177,13 @@ export function SmartOnboarding({ defaultName }: { defaultName: string }) {
 
   return (
     <div className="mx-auto w-full max-w-md">
-      <div className="mb-5 flex items-center gap-2 text-primary">
-        <Leaf className="size-6" />
-        <span className="text-xl font-semibold tracking-tight">Vital360</span>
+      <div className="mb-5 flex items-center gap-2">
+        <span className="flex size-8 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+          <Leaf className="size-5" />
+        </span>
+        <span className="text-gradient-brand text-xl font-semibold tracking-tight">
+          Vital360
+        </span>
       </div>
 
       <ol className="mb-6 flex items-center gap-1.5">

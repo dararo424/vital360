@@ -75,9 +75,16 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-5">
       <header className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">Hola,</p>
-          <h1 className="text-2xl font-semibold tracking-tight">{firstName}</h1>
+        <div className="flex items-center gap-3">
+          <span className="flex size-11 items-center justify-center rounded-2xl bg-primary/12 text-lg font-semibold text-primary">
+            {firstName.charAt(0).toUpperCase()}
+          </span>
+          <div>
+            <p className="text-sm text-muted-foreground">Hola,</p>
+            <h1 className="text-2xl font-semibold leading-tight tracking-tight">
+              {firstName}
+            </h1>
+          </div>
         </div>
         <form action={signOut}>
           <Button variant="ghost" size="icon" type="submit" aria-label="Cerrar sesión">
@@ -97,7 +104,11 @@ export default async function DashboardPage() {
       </Card>
 
       {/* Tu plan IA */}
-      <Button asChild size="lg" className="h-12 w-full">
+      <Button
+        asChild
+        size="lg"
+        className="h-12 w-full bg-gradient-to-br from-primary to-[oklch(0.72_0.17_140)] text-primary-foreground shadow-md shadow-primary/20"
+      >
         <Link href="/mi-plan">
           <Sparkles /> Ver tu plan
         </Link>
