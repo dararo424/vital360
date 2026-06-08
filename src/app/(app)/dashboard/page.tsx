@@ -5,6 +5,7 @@ import {
   Dumbbell,
   LogOut,
   ShoppingCart,
+  Sparkles,
   UtensilsCrossed,
 } from "lucide-react";
 import {
@@ -94,6 +95,13 @@ export default async function DashboardPage() {
           <DayProgress consumed={consumed} goal={goalMacros} />
         </CardContent>
       </Card>
+
+      {/* Tu plan IA */}
+      <Button asChild size="lg" className="h-12 w-full">
+        <Link href="/mi-plan">
+          <Sparkles /> Ver tu plan
+        </Link>
+      </Button>
 
       {/* Accesos rápidos */}
       <div className="grid grid-cols-2 gap-3">

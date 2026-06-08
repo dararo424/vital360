@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getActiveGoal, getProfile, requireUser } from "@/lib/dal";
-import { OnboardingWizard } from "./onboarding-wizard";
+import { SmartOnboarding } from "./smart-onboarding";
 
 export const metadata: Metadata = { title: "Bienvenido · Vital360" };
+
+// La generación del plan con IA puede tardar ~30s.
+export const maxDuration = 60;
 
 export default async function OnboardingPage() {
   const user = await requireUser();
@@ -21,7 +24,7 @@ export default async function OnboardingPage() {
 
   return (
     <main className="min-h-dvh bg-muted/30 px-4 py-10">
-      <OnboardingWizard defaultName={defaultName} />
+      <SmartOnboarding defaultName={defaultName} />
     </main>
   );
 }

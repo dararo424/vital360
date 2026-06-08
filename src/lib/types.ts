@@ -54,6 +54,14 @@ export type Profile = {
   birth_date: string | null; // ISO date (YYYY-MM-DD)
   height_cm: number | null;
   activity_level: ActivityLevel | null;
+  // Plan inteligente (migración 0002)
+  objective: string | null;
+  target_weight_kg: number | null;
+  intensity: string | null;
+  adaptive: boolean | null;
+  onboarding: Record<string, unknown> | null;
+  plan: unknown | null;
+  plan_generated_at: string | null;
   created_at: string;
   updated_at: string;
 };

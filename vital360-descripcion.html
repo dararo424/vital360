@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vital360 — Descripción y funcionamiento</title>
+<style>
+  :root{
+    --green:#16a34a; --green-d:#15803d; --green-l:#dcfce7;
+    --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc;
+    --red:#dc2626; --red-l:#fee2e2; --amber:#b45309; --amber-l:#fef3c7;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink); background:var(--bg); line-height:1.6;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:0 20px 80px}
+  header.hero{
+    background:linear-gradient(135deg,var(--green),var(--green-d));
+    color:#fff; padding:48px 20px 40px; text-align:center;
+  }
+  header.hero .badge{
+    display:inline-block; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.3);
+    padding:4px 12px; border-radius:999px; font-size:13px; font-weight:600; margin-bottom:16px;
+  }
+  header.hero h1{margin:0 0 8px; font-size:40px; letter-spacing:-1px}
+  header.hero p{margin:0 auto; max-width:560px; font-size:17px; opacity:.95}
+  nav.toc{
+    background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 20px;
+    margin:-28px auto 0; max-width:820px; position:relative; box-shadow:0 8px 24px rgba(15,23,42,.06);
+  }
+  nav.toc strong{display:block; font-size:13px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:8px}
+  nav.toc a{color:var(--green-d); text-decoration:none; font-size:14px; font-weight:500; margin-right:14px; white-space:nowrap}
+  nav.toc a:hover{text-decoration:underline}
+  section{margin-top:44px}
+  h2{font-size:26px; letter-spacing:-.5px; margin:0 0 6px; display:flex; align-items:center; gap:10px}
+  h2 .n{
+    display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px;
+    background:var(--green-l); color:var(--green-d); border-radius:10px; font-size:16px; font-weight:700; flex:0 0 auto;
+  }
+  h3{font-size:18px; margin:22px 0 6px}
+  p.lead{color:var(--muted); margin-top:0}
+  .card{background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin-top:14px}
+  .principle{
+    background:var(--green-l); border:1px solid #bbf7d0; border-radius:14px; padding:20px 22px; margin-top:18px;
+  }
+  .principle h3{margin-top:0; color:var(--green-d)}
+  .grid{display:grid; gap:14px; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); margin-top:14px}
+  .mod{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px 20px}
+  .mod .ico{font-size:24px} .mod h4{margin:8px 0 4px; font-size:16px}
+  .mod p{margin:0; font-size:14px; color:var(--muted)}
+  ol.steps{counter-reset:s; list-style:none; padding:0; margin:18px 0 0}
+  ol.steps>li{
+    position:relative; padding:0 0 22px 56px; margin:0;
+  }
+  ol.steps>li:before{
+    counter-increment:s; content:counter(s);
+    position:absolute; left:0; top:0; width:38px; height:38px; border-radius:50%;
+    background:var(--green); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center;
+  }
+  ol.steps>li:after{
+    content:""; position:absolute; left:18px; top:38px; bottom:0; width:2px; background:var(--line);
+  }
+  ol.steps>li:last-child:after{display:none}
+  ol.steps h4{margin:6px 0 4px; font-size:17px}
+  ol.steps p{margin:0; color:var(--muted); font-size:14.5px}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px}
+  .box{border-radius:14px; padding:18px 20px; border:1px solid}
+  .box.yes{background:#f0fdf4; border-color:#bbf7d0}
+  .box.no{background:var(--red-l); border-color:#fecaca}
+  .box h3{margin:0 0 10px; display:flex; align-items:center; gap:8px; font-size:17px}
+  .box.yes h3{color:var(--green-d)} .box.no h3{color:var(--red)}
+  .box ul{margin:0; padding-left:4px; list-style:none}
+  .box li{padding:5px 0 5px 26px; position:relative; font-size:14.5px}
+  .box.yes li:before{content:"✓"; position:absolute; left:0; color:var(--green); font-weight:700}
+  .box.no li:before{content:"✕"; position:absolute; left:0; color:var(--red); font-weight:700}
+  .note{background:var(--amber-l); border:1px solid #fde68a; border-radius:12px; padding:14px 18px; margin-top:14px; font-size:14.5px}
+  .note b{color:var(--amber)}
+  table{width:100%; border-collapse:collapse; margin-top:14px; background:#fff; border-radius:12px; overflow:hidden; border:1px solid var(--line)}
+  th,td{text-align:left; padding:11px 14px; font-size:14px; border-bottom:1px solid var(--line)}
+  th{background:#f1f5f9; font-weight:600} tr:last-child td{border-bottom:none}
+  .pill{display:inline-block; padding:2px 9px; border-radius:999px; font-size:12px; font-weight:600}
+  .pill.ok{background:var(--green-l); color:var(--green-d)}
+  .pill.pend{background:var(--amber-l); color:var(--amber)}
+  code{background:#f1f5f9; padding:1px 6px; border-radius:5px; font-size:13px; font-family:ui-monospace,Menlo,Consolas,monospace}
+  .tag{display:inline-block; background:#f1f5f9; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:3px 10px; font-size:13px; margin:3px 4px 0 0}
+  footer{margin-top:50px; padding-top:24px; border-top:1px solid var(--line); color:var(--muted); font-size:13px; text-align:center}
+  @media(max-width:620px){ .two{grid-template-columns:1fr} header.hero h1{font-size:32px} nav.toc{display:none} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="badge">🌱 PWA de nutrición + ejercicio con IA</div>
+  <h1>Vital360</h1>
+  <p>Cuenta calorías y macros por foto o a mano, <strong>dentro de las metas que define tu nutricionista</strong>. Recetas, plan semanal, entrenos y progreso — todo en tu propio espacio privado.</p>
+</header>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <strong>Contenido</strong>
+    <a href="#que-es">Qué es</a>
+    <a href="#principio">Principio</a>
+    <a href="#stack">Stack</a>
+    <a href="#flujo">Paso a paso</a>
+    <a href="#modulos">Módulos</a>
+    <a href="#hace">Hace / No hace</a>
+    <a href="#estado">Estado actual</a>
+    <a href="#limites">Limitaciones</a>
+  </nav>
+
+  <!-- QUÉ ES -->
+  <section id="que-es">
+    <h2><span class="n">①</span> Qué es</h2>
+    <p class="lead">Una aplicación web <strong>mobile-first</strong> (instalable como app) para llevar el día a día de tu nutrición y entrenamiento.</p>
+    <div class="card">
+      <p style="margin-top:0">Vital360 te deja:</p>
+      <ul style="margin:0">
+        <li>Registrar comidas <strong>por foto</strong> (la IA estima alimentos y macros) o <strong>a mano</strong>.</li>
+        <li>Comparar lo que comes contra <strong>tus metas</strong> (kcal, proteína, carbos, grasa).</li>
+        <li>Guardar <strong>recetas</strong> con sus macros por porción y pedir <strong>ideas con IA</strong> que encajen en tus macros del día.</li>
+        <li>Armar un <strong>plan semanal</strong> de comidas y generar la <strong>lista de mercado</strong> automática.</li>
+        <li>Registrar <strong>entrenos</strong> (fuerza y cardio) y ver tus <strong>récords</strong>.</li>
+        <li>Seguir tu <strong>progreso</strong> (peso y medidas) con gráficas de tendencia.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- PRINCIPIO -->
+  <section id="principio">
+    <h2><span class="n">②</span> El principio que la guía</h2>
+    <div class="principle">
+      <h3>Las metas las define tu nutricionista, no la app</h3>
+      <p style="margin-bottom:0">Vital360 <strong>cuenta, registra y sugiere dentro</strong> de los macros que tú cargas desde tu plan profesional. La app <strong>nunca</strong> propone recortes calóricos por su cuenta ni “objetivos agresivos”. El conteo de la IA es una <strong>estimación de apoyo</strong> (no una medición exacta) y <strong>siempre es editable a mano</strong> antes de guardar. Es una herramienta para quitarte carga, no para sumarte presión.</p>
+    </div>
+  </section>
+
+  <!-- STACK -->
+  <section id="stack">
+    <h2><span class="n">③</span> Con qué está hecha</h2>
+    <p class="lead">Tecnología moderna, datos privados y costo cercano a cero en uso personal.</p>
+    <div>
+      <span class="tag">Next.js 16 (App Router)</span>
+      <span class="tag">TypeScript</span>
+      <span class="tag">Tailwind + shadcn/ui</span>
+      <span class="tag">Supabase (Postgres + Auth + Storage)</span>
+      <span class="tag">RLS (seguridad por fila)</span>
+      <span class="tag">Gemini 2.5 Flash (visión IA)</span>
+      <span class="tag">recharts (gráficas)</span>
+      <span class="tag">PWA (instalable)</span>
+      <span class="tag">Vercel (hosting)</span>
+    </div>
+    <div class="note"><b>Privacidad:</b> cada usuario solo ve lo suyo gracias a RLS en la base de datos. Tus fotos y datos viven en tu propio Supabase.</div>
+  </section>
+
+  <!-- FLUJO -->
+  <section id="flujo">
+    <h2><span class="n">④</span> Cómo funciona, paso a paso</h2>
+    <ol class="steps">
+      <li>
+        <h4>Creas tu cuenta</h4>
+        <p>Te registras con correo y contraseña. Recibes un correo de confirmación; al confirmarlo, ya puedes iniciar sesión (funciona en varios dispositivos).</p>
+      </li>
+      <li>
+        <h4>Onboarding de 4 pasos</h4>
+        <p><strong>1) Perfil</strong> (sexo, fecha de nacimiento, estatura, nivel de actividad) → <strong>2) Metas de tu nutricionista</strong> (kcal, proteína, carbos, grasa) → <strong>3) Preferencias</strong> (recordatorios del enfoque de la app) → <strong>4) Resumen y confirmar</strong>. Las metas quedan guardadas con su fecha de vigencia: si tu nutri ajusta el plan, se cierra la anterior y se crea una nueva, dejando el histórico intacto.</p>
+      </li>
+      <li>
+        <h4>Llegas al Dashboard</h4>
+        <p>Ves el <strong>anillo de calorías del día</strong> y barras de proteína/carbos/grasa (consumido vs meta, en rojo si te pasas), la <strong>tendencia de 7/30 días</strong>, tu <strong>peso</strong>, y accesos rápidos a registrar comida, entreno, plan y lista de mercado.</p>
+      </li>
+      <li>
+        <h4>Registras una comida — por foto o a mano</h4>
+        <p><strong>Foto:</strong> tomas/subes una foto → la IA la analiza y devuelve una lista de alimentos con gramos y macros estimados, cada uno con un % de confianza → <strong>tú editas</strong> lo que haga falta → guardas. <strong>Manual:</strong> buscas el alimento (o lo creas), pones los gramos y se calculan los macros. Cada comida tiene su tipo (desayuno/almuerzo/cena/snack).</p>
+      </li>
+      <li>
+        <h4>Guardas recetas y pides ideas a la IA</h4>
+        <p>Creas recetas con ingredientes; la app calcula los <strong>macros por porción</strong>. Puedes pedir a la IA que <strong>sugiera una receta que encaje en tus macros restantes del día</strong>; la editas y la guardas. Marcas favoritos y etiquetas (alto en proteína, rápido, post-entreno…).</p>
+      </li>
+      <li>
+        <h4>Planeas la semana y generas la lista de mercado</h4>
+        <p>En una grilla de 7 días × comidas, <strong>tocas un espacio</strong> y agregas una receta o un alimento. Ves los macros estimados por día vs tu meta. Con un botón, juntas todos los ingredientes del plan en una <strong>lista de mercado agrupada por categoría</strong>, con casillas para ir marcando en el súper.</p>
+      </li>
+      <li>
+        <h4>Registras tus entrenos</h4>
+        <p>Creas un entreno con título, fecha y duración; agregas ejercicios desde tu catálogo (o creas nuevos) y registras series: <strong>fuerza</strong> (reps/peso/RPE) o <strong>cardio</strong> (minutos/distancia). La app guarda el historial y calcula tus <strong>récords</strong> (mejor peso y mejor volumen por ejercicio).</p>
+      </li>
+      <li>
+        <h4>Sigues tu progreso</h4>
+        <p>Registras peso y medidas (1 por día) y ves la <strong>tendencia en gráficas</strong> (peso, % grasa, cintura, pecho, brazo, muslo). Tu peso actual también aparece en el dashboard.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- MÓDULOS -->
+  <section id="modulos">
+    <h2><span class="n">⑤</span> Los módulos</h2>
+    <div class="grid">
+      <div class="mod"><div class="ico">🔐</div><h4>Cuenta y onboarding</h4><p>Registro/login con correo, wizard de 4 pasos, metas con histórico de vigencia.</p></div>
+      <div class="mod"><div class="ico">📊</div><h4>Dashboard</h4><p>Anillo de calorías, barras de macros, tendencia 7/30 días, peso y accesos rápidos.</p></div>
+      <div class="mod"><div class="ico">📷</div><h4>Registro por foto</h4><p>Gemini Vision estima alimentos y macros ítem por ítem; tú editas antes de guardar.</p></div>
+      <div class="mod"><div class="ico">✍️</div><h4>Registro manual</h4><p>Busca o crea alimentos, define gramos y calcula macros al instante.</p></div>
+      <div class="mod"><div class="ico">🍽️</div><h4>Recetas</h4><p>CRUD con ingredientes, macros por porción, tags, favoritos y sugerencia con IA.</p></div>
+      <div class="mod"><div class="ico">🗓️</div><h4>Plan semanal</h4><p>Grilla 7 días × comidas; macros estimados por día vs meta.</p></div>
+      <div class="mod"><div class="ico">🛒</div><h4>Lista de mercado</h4><p>Junta ingredientes del plan, agrupa por categoría y marca con casillas.</p></div>
+      <div class="mod"><div class="ico">🏋️</div><h4>Entrenos</h4><p>Workouts con series de fuerza y cardio, catálogo de ejercicios y récords.</p></div>
+      <div class="mod"><div class="ico">📈</div><h4>Progreso</h4><p>Peso y medidas con gráficas de tendencia.</p></div>
+    </div>
+  </section>
+
+  <!-- HACE / NO HACE -->
+  <section id="hace">
+    <h2><span class="n">⑥</span> Lo que hace y lo que NO hace</h2>
+    <div class="two">
+      <div class="box yes">
+        <h3>✓ Lo que SÍ hace</h3>
+        <ul>
+          <li>Cuenta calorías y macros a nivel de <strong>ítem</strong> (no solo “una comida”).</li>
+          <li>Estima alimentos y porciones <strong>desde una foto</strong> con IA.</li>
+          <li>Te deja <strong>editar todo</strong> antes de guardar.</li>
+          <li>Compara consumo vs <strong>tus metas</strong> con anillos y barras.</li>
+          <li>Calcula macros de recetas <strong>por porción</strong>.</li>
+          <li>Sugiere recetas que <strong>encajen en tus macros restantes</strong>.</li>
+          <li>Arma plan semanal y <strong>lista de mercado</strong> automática.</li>
+          <li>Registra fuerza y cardio, y calcula <strong>récords</strong>.</li>
+          <li>Grafica tendencias de calorías, peso y medidas.</li>
+          <li>Guarda <strong>histórico</strong> de planes/metas.</li>
+          <li>Funciona en móvil e <strong>se instala</strong> como app (PWA).</li>
+          <li>Mantiene tus datos <strong>privados</strong> (RLS por usuario).</li>
+        </ul>
+      </div>
+      <div class="box no">
+        <h3>✕ Lo que NO hace (por diseño)</h3>
+        <ul>
+          <li><strong>No inventa tus metas</strong> ni propone déficits/recortes por su cuenta.</li>
+          <li>No es una <strong>medición exacta</strong>: el conteo de la IA es estimación.</li>
+          <li>No reemplaza a tu <strong>nutricionista ni a un médico</strong>.</li>
+          <li>No te empuja a comportamientos rígidos ni obsesivos con la comida.</li>
+          <li>No comparte tus datos con otros usuarios.</li>
+        </ul>
+        <h3 style="margin-top:16px">✕ Lo que aún NO tiene (alcance / futuro)</h3>
+        <ul>
+          <li>No tiene base de alimentos precargada (empiezas creando los tuyos).</li>
+          <li>No escanea códigos de barras.</li>
+          <li>No funciona sin internet (no hay modo offline todavía).</li>
+          <li>No tiene recordatorios/notificaciones.</li>
+          <li>No exporta informes (PDF/CSV).</li>
+          <li>No conecta con relojes/wearables ni Apple Health/Google Fit.</li>
+          <li>No guarda aún la foto original en la nube (solo se usa para analizar).</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note"><b>Nota sobre la IA:</b> la estimación por foto puede equivocarse con las porciones. Por eso cada ítem es editable y se guarda su nivel de confianza. No tomes el número como verdad absoluta.</div>
+  </section>
+
+  <!-- ESTADO -->
+  <section id="estado">
+    <h2><span class="n">⑦</span> Estado actual del desarrollo</h2>
+    <p class="lead">El MVP completo (8 “días” del plan) está construido y subido a GitHub.</p>
+    <table>
+      <tr><th>Módulo</th><th>Estado</th></tr>
+      <tr><td>Autenticación + onboarding + navegación</td><td><span class="pill ok">Listo</span></td></tr>
+      <tr><td>Registro manual de comida + catálogo de alimentos</td><td><span class="pill ok">Listo</span></td></tr>
+      <tr><td>Conteo por foto (Gemini Vision)</td><td><span class="pill ok">Listo</span></td></tr>
+      <tr><td>Dashboard (anillos + tendencia + peso)</td><td><span class="pill ok">Listo</span></td></tr>
+      <tr><td>Recetas + sugerencia con IA</td><td><span class="pill ok">Listo</span></td></tr>
+      <tr><td>Plan semanal + lista de mercado</td><td><span class="pill ok">Listo</span></td></tr>
+      <tr><td>Entrenos + récords</td><td><span class="pill ok">Listo</span></td></tr>
+      <tr><td>Progreso + pulido PWA</td><td><span class="pill ok">Listo</span></td></tr>
+      <tr><td>Despliegue en Vercel (en línea)</td><td><span class="pill pend">Pendiente</span></td></tr>
+      <tr><td>Prueba en vivo con tu cuenta real</td><td><span class="pill pend">Pendiente</span></td></tr>
+    </table>
+  </section>
+
+  <!-- LIMITACIONES -->
+  <section id="limites">
+    <h2><span class="n">⑧</span> Notas técnicas y limitaciones a tener en cuenta</h2>
+    <div class="card">
+      <ul style="margin:0">
+        <li><strong>Confirmación de correo activada:</strong> al registrarte debes confirmar el email antes de poder entrar.</li>
+        <li><strong>Catálogo de alimentos vacío al inicio:</strong> la base <code>foods</code> no trae datos precargados; los alimentos se van creando conforme los usas (también los que crea la IA al sugerir recetas).</li>
+        <li><strong>Categorías de la lista de mercado por palabras clave:</strong> como los alimentos no tienen un campo de categoría, se clasifican con un mapeo simple (verduras, frutas, carnes y huevos, lácteos, granos, despensa, otros).</li>
+        <li><strong>Plan semanal con “tocar para agregar”</strong> en lugar de arrastrar — más cómodo en móvil.</li>
+        <li><strong>La sugerencia de receta con IA</strong> tarda unos segundos (muestra un indicador de carga).</li>
+        <li><strong>El deploy y la prueba autenticada end-to-end están pendientes</strong>; todo lo demás se validó contra la base de datos real y contra la IA.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    Vital360 — documento de descripción · Generado para planear las siguientes ideas.<br>
+    Código: github.com/dararo424/vital360
+  </footer>
+
+</div>
+</body>
+</html>
