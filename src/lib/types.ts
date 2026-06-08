@@ -9,30 +9,31 @@ import { z } from "zod";
 
 // ── Enums / catálogos ────────────────────────────────────────────────────────
 
-export const SEXES = ["male", "female", "other"] as const;
+// Valores alineados a los CHECK constraints reales de la base.
+export const SEXES = ["M", "F", "O"] as const;
 export type Sex = (typeof SEXES)[number];
 
 export const SEX_LABELS: Record<Sex, string> = {
-  male: "Masculino",
-  female: "Femenino",
-  other: "Otro",
+  M: "Masculino",
+  F: "Femenino",
+  O: "Otro",
 };
 
 export const ACTIVITY_LEVELS = [
-  "sedentary",
-  "light",
-  "moderate",
-  "active",
-  "very_active",
+  "sedentario",
+  "ligero",
+  "moderado",
+  "activo",
+  "muy_activo",
 ] as const;
 export type ActivityLevel = (typeof ACTIVITY_LEVELS)[number];
 
 export const ACTIVITY_LABELS: Record<ActivityLevel, string> = {
-  sedentary: "Sedentario (poco o nada de ejercicio)",
-  light: "Ligero (1-3 días/semana)",
-  moderate: "Moderado (3-5 días/semana)",
-  active: "Activo (6-7 días/semana)",
-  very_active: "Muy activo (trabajo físico o doble sesión)",
+  sedentario: "Sedentario (poco o nada de ejercicio)",
+  ligero: "Ligero (1-3 días/semana)",
+  moderado: "Moderado (3-5 días/semana)",
+  activo: "Activo (6-7 días/semana)",
+  muy_activo: "Muy activo (trabajo físico o doble sesión)",
 };
 
 export const MEAL_TYPES = ["desayuno", "almuerzo", "cena", "snack"] as const;
@@ -98,7 +99,7 @@ export type FoodLog = {
   user_id: string;
   meal_type: MealType;
   log_date: string; // ISO date
-  source: string; // "manual" | "photo" | ...
+  source: string; // "manual" | "foto"
   photo_url: string | null;
   note: string | null;
   ai_raw: unknown | null;
@@ -235,10 +236,10 @@ export function categorizeIngredient(name: string): string {
   return "Otros";
 }
 
-export const EXERCISE_TYPES = ["strength", "cardio"] as const;
+export const EXERCISE_TYPES = ["fuerza", "cardio"] as const;
 export type ExerciseType = (typeof EXERCISE_TYPES)[number];
 export const EXERCISE_TYPE_LABELS: Record<ExerciseType, string> = {
-  strength: "Fuerza",
+  fuerza: "Fuerza",
   cardio: "Cardio",
 };
 
@@ -374,7 +375,7 @@ export const logMealSchema = z.object({
     .min(1, "Fecha requerida")
     .refine((v) => !Number.isNaN(Date.parse(v)), "Fecha inválida"),
   note: z.string().trim().max(280).optional().or(z.literal("")),
-  source: z.enum(["manual", "photo"]).default("manual"),
+  source: z.enum(["manual", "foto"]).default("manual"),
   ai_raw: z.unknown().optional(),
   items: z.array(logItemSchema).min(1, "Agrega al menos un alimento"),
 });

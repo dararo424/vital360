@@ -95,7 +95,7 @@ export function WorkoutEditor() {
         .filter((r) => r.a !== "" || r.b !== "")
         .map((r) => {
           n += 1;
-          if (b.type === "strength") {
+          if (b.type === "fuerza") {
             return {
               exercise_id: b.exercise_id,
               set_number: n,
@@ -161,8 +161,8 @@ export function WorkoutEditor() {
 
             <div className="mb-1 grid grid-cols-[1.5rem_1fr_1fr_3rem_1.5rem] items-center gap-2 text-[11px] text-muted-foreground">
               <span>#</span>
-              <span>{b.type === "strength" ? "Reps" : "Min"}</span>
-              <span>{b.type === "strength" ? "Peso (kg)" : "Dist (km)"}</span>
+              <span>{b.type === "fuerza" ? "Reps" : "Min"}</span>
+              <span>{b.type === "fuerza" ? "Peso (kg)" : "Dist (km)"}</span>
               <span>RPE</span>
               <span />
             </div>
@@ -221,7 +221,7 @@ function ExercisePicker({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Exercise[]>([]);
   const [searching, setSearching] = useState(false);
-  const [newType, setNewType] = useState<ExerciseType>("strength");
+  const [newType, setNewType] = useState<ExerciseType>("fuerza");
   const [muscle, setMuscle] = useState("");
   const [creating, startCreate] = useTransition();
   const [error, setError] = useState<string | null>(null);

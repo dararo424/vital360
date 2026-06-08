@@ -83,6 +83,7 @@ export async function createRecipe(input: RecipeInput): Promise<ActionState> {
       instructions: d.instructions || null,
       prep_minutes: d.prep_minutes ?? null,
       image_url: d.image_url || null,
+      source: d.tags.includes("sugerida_ia") ? "ia" : "manual",
     })
     .select("id")
     .single();

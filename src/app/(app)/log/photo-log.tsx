@@ -193,7 +193,7 @@ export function PhotoLog() {
         meal_type: mealType,
         log_date: logDate,
         note,
-        source: "photo",
+        source: "foto",
         ai_raw: rawAi,
         items: items.map((it) => ({
           food_id: null,

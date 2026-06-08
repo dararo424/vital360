@@ -77,7 +77,13 @@ export async function completeSmartOnboarding(
     },
     { onConflict: "id" }
   );
-  if (pErr) return { ok: false, error: "No se pudo guardar el perfil." };
+  if (pErr) {
+    console.error("guardar perfil:", pErr);
+    return {
+      ok: false,
+      error: `No se pudo guardar el perfil — ${pErr.code ?? ""} ${pErr.message ?? ""} ${pErr.details ?? ""} ${pErr.hint ?? ""}`.trim(),
+    };
+  }
 
   // 3. Peso de hoy en body_metrics (1 por día → update o insert)
   const date = today();

@@ -65,11 +65,11 @@ export const INTENSITY_HINTS: Record<Intensity, string> = {
 };
 
 const ACTIVITY_FACTORS: Record<ActivityLevel, number> = {
-  sedentary: 1.2,
-  light: 1.375,
-  moderate: 1.55,
-  active: 1.725,
-  very_active: 1.9,
+  sedentario: 1.2,
+  ligero: 1.375,
+  moderado: 1.55,
+  activo: 1.725,
+  muy_activo: 1.9,
 };
 
 // % de déficit (negativo) o superávit (positivo) por objetivo × intensidad.
@@ -134,7 +134,7 @@ export function computePlan(input: PlanInput): PlanEstimate {
   // 1. BMR (Mifflin-St Jeor)
   const base =
     10 * input.weight_kg + 6.25 * input.height_cm - 5 * input.age;
-  const bmr = Math.round(base + (input.sex === "female" ? -161 : 5));
+  const bmr = Math.round(base + (input.sex === "F" ? -161 : 5));
 
   // 2. TDEE (mantenimiento)
   const tdee = Math.round(bmr * ACTIVITY_FACTORS[input.activity_level]);
@@ -144,7 +144,7 @@ export function computePlan(input: PlanInput): PlanEstimate {
   let daily = Math.round(tdee * (1 + pct));
 
   // 4. Topes de seguridad
-  const floor = input.sex === "female" ? 1200 : 1500;
+  const floor = input.sex === "F" ? 1200 : 1500;
   if (daily < floor) {
     daily = floor;
     warnings.push(
@@ -314,7 +314,7 @@ export function buildPlanBrief(
   const list = (map: Record<string, string>, arr?: string[]) =>
     arr && arr.length ? arr.map((x) => map[x] ?? x).join(", ") : "ninguno";
   return `Perfil del usuario:
-- ${data.sex === "female" ? "Mujer" : data.sex === "male" ? "Hombre" : "Persona"}, nacida ${data.birth_date}, ${data.height_cm} cm, ${data.weight_kg} kg.
+- ${data.sex === "F" ? "Mujer" : data.sex === "M" ? "Hombre" : "Persona"}, nacida ${data.birth_date}, ${data.height_cm} cm, ${data.weight_kg} kg.
 - Actividad diaria: ${ACTIVITY_LABELS[data.activity_level]}. Trabajo: ${lbl(WORK_TYPES, q.work_type)}.
 - Objetivo: ${OBJECTIVE_LABELS[data.objective]} (${OBJECTIVE_HINTS[data.objective]})${data.target_weight_kg ? `. Meta de peso: ${data.target_weight_kg} kg` : ""}.
 - Intensidad elegida: ${INTENSITY_LABELS[data.intensity]}. Entrena en: ${lbl(PLACES, q.place)}, ${q.training_days ?? "?"} días/semana disponibles. Sueño: ${q.sleep_hours || "?"} h.
