@@ -185,6 +185,131 @@ export const getBodyMetrics = cache(
   }
 );
 
+// ── Planificador semanal ─────────────────────────────────────────────────────
+
+/** Lunes (inicio de semana) de la fecha dada, en formato YYYY-MM-DD. */
+export function mondayOf(dateIso?: string): string {
+  const d = dateIso ? new Date(dateIso + "T00:00:00") : new Date();
+  const day = (d.getDay() + 6) % 7; // 0 = lunes
+  d.setDate(d.getDate() - day);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Los 7 días (ISO) de la semana que empieza en `weekStart`. */
+export function weekDays(weekStart: string): string[] {
+  const out: string[] = [];
+  const d = new Date(weekStart + "T00:00:00");
+  for (let i = 0; i < 7; i++) {
+    out.push(d.toISOString().slice(0, 10));
+    d.setDate(d.getDate() + 1);
+  }
+  return out;
+}
+
+export type PlanEntry = {
+  id: string;
+  entry_date: string;
+  meal_type: string;
+  servings: number;
+  kind: "recipe" | "food";
+  label: string;
+  macros: Macros;
+};
+
+export type PlanWeek = {
+  plan: { id: string; week_start: string } | null;
+  entries: PlanEntry[];
+};
+
+const PLAN_SELECT =
+  "id,week_start,meal_plan_entries(id,entry_date,meal_type,servings,recipe_id,food_id," +
+  "recipes(id,title,servings,recipe_ingredients(quantity_g,foods(kcal,protein_g,carbs_g,fat_g,serving_g)))," +
+  "foods(name,kcal,protein_g,carbs_g,fat_g,serving_g))";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function mapPlanEntry(e: any): PlanEntry {
+  if (e.recipes) {
+    const ings = (e.recipes.recipe_ingredients ?? []).map((ri: any) => ({
+      quantity_g: ri.quantity_g,
+      food: ri.foods ?? null,
+    }));
+    const { perServing } = computeRecipeMacros(ings, e.recipes.servings);
+    return {
+      id: e.id,
+      entry_date: e.entry_date,
+      meal_type: e.meal_type,
+      servings: e.servings,
+      kind: "recipe",
+      label: e.recipes.title,
+      macros: {
+        kcal: Math.round(perServing.kcal * e.servings),
+        protein_g: Math.round(perServing.protein_g * e.servings),
+        carbs_g: Math.round(perServing.carbs_g * e.servings),
+        fat_g: Math.round(perServing.fat_g * e.servings),
+      },
+    };
+  }
+  const f = e.foods;
+  return {
+    id: e.id,
+    entry_date: e.entry_date,
+    meal_type: e.meal_type,
+    servings: e.servings,
+    kind: "food",
+    label: f?.name ?? "Alimento",
+    macros: f
+      ? {
+          kcal: Math.round(f.kcal * e.servings),
+          protein_g: Math.round(f.protein_g * e.servings),
+          carbs_g: Math.round(f.carbs_g * e.servings),
+          fat_g: Math.round(f.fat_g * e.servings),
+        }
+      : { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
+  };
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/** Plan de la semana (con entries y macros), o plan null si no existe. */
+export const getPlanWeek = cache(
+  async (weekStart: string): Promise<PlanWeek> => {
+    const user = await getUser();
+    if (!user) return { plan: null, entries: [] };
+
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("meal_plans")
+      .select(PLAN_SELECT)
+      .eq("user_id", user.id)
+      .eq("week_start", weekStart)
+      .maybeSingle();
+
+    if (!data) return { plan: null, entries: [] };
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    const d = data as any;
+    return {
+      plan: { id: d.id, week_start: d.week_start },
+      entries: (d.meal_plan_entries ?? []).map(mapPlanEntry),
+    };
+  }
+);
+
+/** Lista de mercado más reciente del usuario (con items). */
+export const getLatestGroceryList = cache(async () => {
+  const user = await getUser();
+  if (!user) return null;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("grocery_lists")
+    .select("id,title,created_at,grocery_items(id,name,category,quantity,is_checked)")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return data ?? null;
+});
+
 /** Lista de recetas del usuario (con macros calculados). */
 export const getRecipes = cache(async (): Promise<RecipeWithMacros[]> => {
   const user = await getUser();

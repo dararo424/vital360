@@ -171,6 +171,61 @@ export const RECIPE_TAG_LABELS: Record<string, string> = {
   meal_prep: "Meal prep",
 };
 
+export type MealPlan = {
+  id: string;
+  user_id: string;
+  week_start: string; // ISO date (lunes)
+  created_at: string;
+};
+
+export type MealPlanEntry = {
+  id: string;
+  meal_plan_id: string;
+  entry_date: string; // ISO date
+  meal_type: MealType;
+  recipe_id: string | null;
+  food_id: string | null;
+  servings: number;
+  created_at: string;
+};
+
+export type GroceryList = {
+  id: string;
+  user_id: string;
+  meal_plan_id: string | null;
+  title: string;
+  created_at: string;
+};
+
+export type GroceryItem = {
+  id: string;
+  grocery_list_id: string;
+  name: string;
+  category: string | null;
+  quantity: string | null; // texto, ej. "200 g"
+  is_checked: boolean;
+  created_at: string;
+};
+
+/** Categoriza un ingrediente por palabras clave (foods no tiene categoría). */
+export function categorizeIngredient(name: string): string {
+  const n = name.toLowerCase();
+  const has = (...w: string[]) => w.some((x) => n.includes(x));
+  if (has("pollo", "res", "carne", "cerdo", "pavo", "pescado", "atún", "salmón", "huevo", "jamón", "lomo", "tocino"))
+    return "Carnes y huevos";
+  if (has("leche", "queso", "yogur", "yogurt", "crema", "mantequilla"))
+    return "Lácteos";
+  if (has("manzana", "banano", "plátano", "fresa", "mango", "naranja", "uva", "pera", "piña", "fruta", "aguacate", "palta"))
+    return "Frutas";
+  if (has("lechuga", "tomate", "cebolla", "zanahoria", "brócoli", "espinaca", "pepino", "pimiento", "ajo", "papa", "verdura", "vegetal", "champiñón", "calabacín"))
+    return "Verduras";
+  if (has("arroz", "pasta", "pan", "avena", "quinoa", "harina", "tortilla", "cereal", "frijol", "lenteja", "garbanzo"))
+    return "Granos y legumbres";
+  if (has("aceite", "sal", "azúcar", "salsa", "vinagre", "especia", "condimento"))
+    return "Despensa";
+  return "Otros";
+}
+
 export type BodyMetric = {
   id: string;
   user_id: string;

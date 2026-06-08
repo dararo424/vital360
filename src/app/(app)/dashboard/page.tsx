@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Dumbbell, LogOut, UtensilsCrossed } from "lucide-react";
+import {
+  CalendarRange,
+  Dumbbell,
+  LogOut,
+  ShoppingCart,
+  UtensilsCrossed,
+} from "lucide-react";
 import {
   getBodyMetrics,
   getMacrosRange,
@@ -99,6 +105,16 @@ export default async function DashboardPage() {
         <Button asChild size="lg" variant="outline" className="h-12">
           <Link href="/entrenos">
             <Dumbbell /> Registrar entreno
+          </Link>
+        </Button>
+        <Button asChild size="lg" variant="outline" className="h-12">
+          <Link href="/plan">
+            <CalendarRange /> Plan semanal
+          </Link>
+        </Button>
+        <Button asChild size="lg" variant="outline" className="h-12">
+          <Link href="/mercado">
+            <ShoppingCart /> Lista de mercado
           </Link>
         </Button>
       </div>
