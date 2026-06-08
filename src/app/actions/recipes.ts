@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getUser, getRemainingMacros } from "@/lib/dal";
 import { suggestRecipeRaw, stripJsonFences } from "@/lib/gemini";
+import { generateAndUploadDishPhoto } from "@/lib/dish-photo";
 import {
   recipeSchema,
   suggestedRecipeSchema,
@@ -81,6 +82,7 @@ export async function createRecipe(input: RecipeInput): Promise<ActionState> {
       tags: d.tags,
       instructions: d.instructions || null,
       prep_minutes: d.prep_minutes ?? null,
+      image_url: d.image_url || null,
     })
     .select("id")
     .single();
@@ -160,6 +162,45 @@ export async function toggleFavorite(id: string, value: boolean): Promise<void> 
     .eq("user_id", user.id);
   revalidatePath("/recetas");
   revalidatePath(`/recetas/${id}`);
+}
+
+/** Genera (con IA) la foto de una receta guardada y la guarda en image_url. */
+export async function generateRecipePhoto(
+  recipeId: string
+): Promise<{ ok: boolean; error?: string }> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Sesión expirada." };
+
+  const supabase = await createClient();
+  const { data: recipe } = await supabase
+    .from("recipes")
+    .select("id,title,recipe_ingredients(name)")
+    .eq("id", recipeId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!recipe) return { ok: false, error: "Receta no encontrada." };
+
+  const ingredients = ((recipe as any).recipe_ingredients ?? []).map(
+    (i: any) => i.name
+  );
+  const url = await generateAndUploadDishPhoto(
+    supabase,
+    user.id,
+    (recipe as any).title,
+    ingredients,
+    `recipe-${recipeId}`
+  );
+  if (!url) {
+    return {
+      ok: false,
+      error: "No se pudo generar la foto (revisa que el billing de Gemini esté activo).",
+    };
+  }
+
+  await supabase.from("recipes").update({ image_url: url }).eq("id", recipeId);
+  revalidatePath(`/recetas/${recipeId}`);
+  revalidatePath("/recetas");
+  return { ok: true };
 }
 
 export async function suggestRecipe(

@@ -6,9 +6,14 @@ import { getRecipe, requireOnboarded } from "@/lib/dal";
 import { RECIPE_TAG_LABELS } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DeleteRecipeButton, FavoriteButton } from "../recipe-actions";
+import {
+  DeleteRecipeButton,
+  FavoriteButton,
+  GenerateRecipePhotoButton,
+} from "../recipe-actions";
 
 export const metadata: Metadata = { title: "Receta · Vital360" };
+export const maxDuration = 60; // generación de foto con IA
 
 export default async function RecipeDetailPage({
   params,
@@ -35,6 +40,15 @@ export default async function RecipeDetailPage({
       >
         <ChevronLeft className="size-4" /> Recetas
       </Link>
+
+      {recipe.image_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={recipe.image_url}
+          alt={recipe.title}
+          className="h-52 w-full rounded-xl object-cover"
+        />
+      )}
 
       <header className="flex items-start justify-between gap-2">
         <div>
@@ -111,6 +125,7 @@ export default async function RecipeDetailPage({
       )}
 
       <div className="space-y-2">
+        <GenerateRecipePhotoButton id={recipe.id} hasPhoto={!!recipe.image_url} />
         <Button asChild variant="outline" size="lg" className="h-11 w-full">
           <Link href={`/recetas/${recipe.id}/editar`}>
             <Pencil /> Editar

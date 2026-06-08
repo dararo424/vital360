@@ -1,8 +1,13 @@
 "use client";
 
-import { useTransition } from "react";
-import { Heart, Loader2, Trash2 } from "lucide-react";
-import { deleteRecipe, toggleFavorite } from "@/app/actions/recipes";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Heart, ImagePlus, Loader2, Trash2 } from "lucide-react";
+import {
+  deleteRecipe,
+  generateRecipePhoto,
+  toggleFavorite,
+} from "@/app/actions/recipes";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -30,6 +35,41 @@ export function FavoriteButton({
         )}
       />
     </Button>
+  );
+}
+
+export function GenerateRecipePhotoButton({
+  id,
+  hasPhoto,
+}: {
+  id: string;
+  hasPhoto: boolean;
+}) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [err, setErr] = useState<string | null>(null);
+  return (
+    <div>
+      <Button
+        type="button"
+        variant="outline"
+        size="lg"
+        className="h-11 w-full"
+        disabled={pending}
+        onClick={() => {
+          setErr(null);
+          start(async () => {
+            const res = await generateRecipePhoto(id);
+            if (!res.ok) setErr(res.error ?? "Error");
+            else router.refresh();
+          });
+        }}
+      >
+        {pending ? <Loader2 className="animate-spin" /> : <ImagePlus />}
+        {pending ? "Generando foto…" : hasPhoto ? "Regenerar foto" : "Generar foto con IA"}
+      </Button>
+      {err && <p className="mt-1 text-xs text-destructive">{err}</p>}
+    </div>
   );
 }
 

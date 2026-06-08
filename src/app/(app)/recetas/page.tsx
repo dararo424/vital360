@@ -45,7 +45,7 @@ export default async function RecetasPage() {
               <Link href={`/recetas/${r.id}`}>
                 <Card className="transition-colors hover:bg-muted/40">
                   <CardContent className="py-4">
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="flex items-center gap-1.5 font-medium">
                           {r.title}
@@ -59,6 +59,14 @@ export default async function RecetasPage() {
                           {r.perServing.fat_g} g · {r.servings} porc.
                         </p>
                       </div>
+                      {r.image_url && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={r.image_url}
+                          alt={r.title}
+                          className="size-14 shrink-0 rounded-lg object-cover"
+                        />
+                      )}
                     </div>
                     {r.tags && r.tags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">

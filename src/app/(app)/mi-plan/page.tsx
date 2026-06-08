@@ -16,7 +16,11 @@ import {
 } from "@/lib/nutrition-plan";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RegenerateButton, SaveRecipeButton } from "./plan-actions";
+import {
+  GeneratePlanPhotoButton,
+  RegenerateButton,
+  SaveRecipeButton,
+} from "./plan-actions";
 
 export const metadata: Metadata = { title: "Tu plan · Vital360" };
 export const maxDuration = 60; // regeneración con IA
@@ -182,7 +186,15 @@ export default async function MiPlanPage() {
                 <Utensils className="size-4" /> Recetas recomendadas
               </h2>
               {plan.recipes.map((r: any, i: number) => (
-                <Card key={i}>
+                <Card key={i} className="overflow-hidden">
+                  {r.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={r.image_url}
+                      alt={r.title}
+                      className="h-44 w-full object-cover"
+                    />
+                  )}
                   <CardContent className="space-y-3 py-4">
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -212,6 +224,7 @@ export default async function MiPlanPage() {
 
                     <div className="flex flex-wrap items-center gap-2">
                       <SaveRecipeButton recipe={r} />
+                      <GeneratePlanPhotoButton index={i} />
                       {r.video_search && (
                         <Button asChild variant="ghost" size="sm" className="h-8">
                           <a

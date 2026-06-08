@@ -145,6 +145,7 @@ export type Recipe = {
   is_favorite: boolean;
   instructions: string | null;
   prep_minutes: number | null;
+  image_url: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -412,6 +413,7 @@ export const recipeSchema = z.object({
   prep_minutes: z.coerce.number().int().min(0).max(1440).optional(),
   instructions: z.string().trim().max(4000).optional().or(z.literal("")),
   tags: z.array(z.string().trim().min(1).max(40)).max(12).default([]),
+  image_url: z.string().url().optional().or(z.literal("")),
   ingredients: z
     .array(recipeIngredientInputSchema)
     .min(1, "Agrega al menos un ingrediente"),

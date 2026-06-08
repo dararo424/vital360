@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getUser, today } from "@/lib/dal";
 import { generatePlanRaw, stripJsonFences } from "@/lib/gemini";
+import { generateAndUploadDishPhoto } from "@/lib/dish-photo";
 import {
   ageFromBirthDate,
   buildPlanBrief,
@@ -205,6 +206,44 @@ export async function regeneratePlan(): Promise<{ ok: boolean; error?: string }>
     return { ok: false, error: "No se pudo generar el plan. Intenta de nuevo." };
   }
 
+  revalidatePath("/mi-plan");
+  return { ok: true };
+}
+
+/** Genera la foto IA de una receta del plan y la guarda en el plan jsonb. */
+export async function generatePlanRecipePhoto(
+  index: number
+): Promise<{ ok: boolean; error?: string }> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Sesión expirada." };
+
+  const supabase = await createClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("plan")
+    .eq("id", user.id)
+    .maybeSingle();
+  const plan = (profile as any)?.plan;
+  const recipe = plan?.recipes?.[index];
+  if (!recipe) return { ok: false, error: "Receta no encontrada." };
+
+  const ingredients = (recipe.ingredients ?? []).map((i: any) => i.name);
+  const url = await generateAndUploadDishPhoto(
+    supabase,
+    user.id,
+    recipe.title,
+    ingredients,
+    `plan-${index}`
+  );
+  if (!url) {
+    return {
+      ok: false,
+      error: "No se pudo generar la foto (revisa que el billing de Gemini esté activo).",
+    };
+  }
+
+  plan.recipes[index] = { ...recipe, image_url: url };
+  await supabase.from("profiles").update({ plan }).eq("id", user.id);
   revalidatePath("/mi-plan");
   return { ok: true };
 }

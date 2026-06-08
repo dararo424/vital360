@@ -252,6 +252,46 @@ Responde SOLO JSON (sin markdown) con:
   return result.response.text();
 }
 
+const IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
+
+/**
+ * Genera una foto del plato con el modelo de imagen de Gemini.
+ * Requiere facturación activa en la API (el tier gratis no permite imágenes).
+ * Devuelve la imagen en base64, o null si falla / no hay cuota.
+ */
+export async function generateDishImage(
+  title: string,
+  ingredients: string[]
+): Promise<{ data: string; mimeType: string } | null> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY no configurada");
+
+  const prompt = `Fotografía cenital, realista y muy apetitosa de un plato de "${title}".${
+    ingredients.length ? ` Ingredientes visibles: ${ingredients.slice(0, 6).join(", ")}.` : ""
+  } Estilo food photography profesional, luz natural suave, fondo neutro de madera o mármol claro, plato bien emplatado. Sin texto ni marcas de agua.`;
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${IMAGE_MODEL}:generateContent?key=${encodeURIComponent(key)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+    }
+  );
+  if (!res.ok) {
+    console.error("generateDishImage:", res.status, (await res.text()).slice(0, 200));
+    return null;
+  }
+  const j = await res.json();
+  const parts = j?.candidates?.[0]?.content?.parts ?? [];
+  for (const p of parts) {
+    if (p.inlineData?.data) {
+      return { data: p.inlineData.data, mimeType: p.inlineData.mimeType || "image/png" };
+    }
+  }
+  return null;
+}
+
 /** Quita fences de markdown por si el modelo los añade pese al responseMimeType. */
 export function stripJsonFences(text: string): string {
   return text
