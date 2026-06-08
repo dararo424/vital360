@@ -94,6 +94,7 @@ export function RecipeEditor({
 }) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [servings, setServings] = useState(String(initial?.servings ?? 1));
+  const lastServings = useRef(Number(initial?.servings ?? 1) || 1);
   const [prep, setPrep] = useState(
     initial?.prep_minutes != null ? String(initial.prep_minutes) : ""
   );
@@ -154,6 +155,21 @@ export function RecipeEditor({
     setItems((p) =>
       p.map((it) => (it.key === key ? { ...it, quantity_g: Math.max(0, g) } : it))
     );
+  }
+  // Al cambiar las porciones, reescala los ingredientes proporcionalmente
+  // (los macros por porción se mantienen).
+  function onServingsChange(v: string) {
+    setServings(v);
+    const n = Number(v);
+    if (!v || !Number.isFinite(n) || n <= 0) return; // estado intermedio
+    const prev = lastServings.current;
+    if (prev > 0 && n !== prev) {
+      const ratio = n / prev;
+      setItems((p) =>
+        p.map((it) => ({ ...it, quantity_g: Math.round(it.quantity_g * ratio) }))
+      );
+    }
+    lastServings.current = n;
   }
   function removeItem(key: string) {
     setItems((p) => p.filter((it) => it.key !== key));
@@ -280,7 +296,7 @@ export function RecipeEditor({
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="servings">Porciones</Label>
-          <Input id="servings" type="number" inputMode="numeric" value={servings} onChange={(e) => setServings(e.target.value)} />
+          <Input id="servings" type="number" inputMode="numeric" value={servings} onChange={(e) => onServingsChange(e.target.value)} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="prep">Prep (min)</Label>

@@ -33,9 +33,12 @@ export async function completeSmartOnboarding(
 
   const parsed = smartOnboardingSchema.safeParse(input);
   if (!parsed.success) {
+    const campos = parsed.error.issues
+      .map((i) => `${i.path.join(".") || "?"} (${i.message})`)
+      .join(" · ");
     return {
       ok: false,
-      error: "Revisa los datos del formulario.",
+      error: `Revisa estos campos: ${campos}`,
       fieldErrors: z.flattenError(parsed.error).fieldErrors,
     };
   }
@@ -79,10 +82,7 @@ export async function completeSmartOnboarding(
   );
   if (pErr) {
     console.error("guardar perfil:", pErr);
-    return {
-      ok: false,
-      error: `No se pudo guardar el perfil — ${pErr.code ?? ""} ${pErr.message ?? ""} ${pErr.details ?? ""} ${pErr.hint ?? ""}`.trim(),
-    };
+    return { ok: false, error: "No se pudo guardar el perfil. Intenta de nuevo." };
   }
 
   // 3. Peso de hoy en body_metrics (1 por día → update o insert)
