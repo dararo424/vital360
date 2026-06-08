@@ -226,6 +226,45 @@ export function categorizeIngredient(name: string): string {
   return "Otros";
 }
 
+export const EXERCISE_TYPES = ["strength", "cardio"] as const;
+export type ExerciseType = (typeof EXERCISE_TYPES)[number];
+export const EXERCISE_TYPE_LABELS: Record<ExerciseType, string> = {
+  strength: "Fuerza",
+  cardio: "Cardio",
+};
+
+export type Exercise = {
+  id: string;
+  user_id: string | null; // null = global
+  name: string;
+  muscle_group: string | null;
+  type: ExerciseType;
+  created_at: string;
+};
+
+export type Workout = {
+  id: string;
+  user_id: string;
+  title: string;
+  workout_date: string; // ISO date
+  duration_min: number | null;
+  note: string | null;
+  created_at: string;
+};
+
+export type WorkoutSet = {
+  id: string;
+  workout_id: string;
+  exercise_id: string;
+  set_number: number;
+  reps: number | null;
+  weight_kg: number | null;
+  duration_sec: number | null;
+  distance_m: number | null;
+  rpe: number | null;
+  created_at: string;
+};
+
 export type BodyMetric = {
   id: string;
   user_id: string;
@@ -393,6 +432,37 @@ export function computeRecipeMacros(
     },
   };
 }
+
+// ── Schemas de entrenos ──────────────────────────────────────────────────────
+
+export const exerciseSchema = z.object({
+  name: z.string().trim().min(1, "Nombre requerido").max(120),
+  type: z.enum(EXERCISE_TYPES),
+  muscle_group: z.string().trim().max(60).optional().or(z.literal("")),
+});
+export type ExerciseInput = z.infer<typeof exerciseSchema>;
+
+export const workoutSetInputSchema = z.object({
+  exercise_id: z.string().uuid(),
+  set_number: z.coerce.number().int().min(1),
+  reps: z.coerce.number().int().min(0).max(1000).nullable().optional(),
+  weight_kg: z.coerce.number().min(0).max(1000).nullable().optional(),
+  duration_sec: z.coerce.number().int().min(0).max(86400).nullable().optional(),
+  distance_m: z.coerce.number().min(0).max(1000000).nullable().optional(),
+  rpe: z.coerce.number().min(0).max(10).nullable().optional(),
+});
+
+export const workoutSchema = z.object({
+  title: z.string().trim().min(1, "Título requerido").max(120),
+  workout_date: z
+    .string()
+    .min(1, "Fecha requerida")
+    .refine((v) => !Number.isNaN(Date.parse(v)), "Fecha inválida"),
+  duration_min: z.coerce.number().int().min(0).max(1440).optional(),
+  note: z.string().trim().max(280).optional().or(z.literal("")),
+  sets: z.array(workoutSetInputSchema).min(1, "Agrega al menos una serie"),
+});
+export type WorkoutInput = z.infer<typeof workoutSchema>;
 
 /** Ítem sugerido por la IA para una receta (se vuelve food al guardar). */
 export const suggestedIngredientSchema = z.object({

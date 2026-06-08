@@ -185,6 +185,101 @@ export const getBodyMetrics = cache(
   }
 );
 
+// ── Entrenos ─────────────────────────────────────────────────────────────────
+
+export type WorkoutWithSets = {
+  id: string;
+  title: string;
+  workout_date: string;
+  duration_min: number | null;
+  note: string | null;
+  sets: {
+    id: string;
+    exercise_id: string;
+    set_number: number;
+    reps: number | null;
+    weight_kg: number | null;
+    duration_sec: number | null;
+    distance_m: number | null;
+    rpe: number | null;
+    exercise: { name: string; type: string; muscle_group: string | null } | null;
+  }[];
+};
+
+export type ExerciseRecord = {
+  name: string;
+  type: string;
+  maxWeight: number | null;
+  maxVolume: number | null; // mejor reps×peso en una serie
+};
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function mapWorkout(w: any): WorkoutWithSets {
+  return {
+    id: w.id,
+    title: w.title,
+    workout_date: w.workout_date,
+    duration_min: w.duration_min,
+    note: w.note,
+    sets: (w.workout_sets ?? [])
+      .map((s: any) => ({
+        id: s.id,
+        exercise_id: s.exercise_id,
+        set_number: s.set_number,
+        reps: s.reps,
+        weight_kg: s.weight_kg,
+        duration_sec: s.duration_sec,
+        distance_m: s.distance_m,
+        rpe: s.rpe,
+        exercise: s.exercises ?? null,
+      }))
+      .sort((a: any, b: any) => a.set_number - b.set_number),
+  };
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/** Historial de entrenos del usuario (con sets y ejercicios). */
+export const getWorkouts = cache(async (): Promise<WorkoutWithSets[]> => {
+  const user = await getUser();
+  if (!user) return [];
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("workouts")
+    .select(
+      "id,title,workout_date,duration_min,note,workout_sets(id,exercise_id,set_number,reps,weight_kg,duration_sec,distance_m,rpe,exercises(name,type,muscle_group))"
+    )
+    .eq("user_id", user.id)
+    .order("workout_date", { ascending: false })
+    .limit(100);
+
+  return ((data as unknown[]) ?? []).map(mapWorkout);
+});
+
+/** Récords por ejercicio calculados desde el historial. */
+export function computeRecords(workouts: WorkoutWithSets[]): ExerciseRecord[] {
+  const map = new Map<string, ExerciseRecord>();
+  for (const w of workouts) {
+    for (const s of w.sets) {
+      if (!s.exercise) continue;
+      const key = s.exercise.name;
+      const rec =
+        map.get(key) ??
+        { name: key, type: s.exercise.type, maxWeight: null, maxVolume: null };
+      if (s.weight_kg != null) {
+        rec.maxWeight = Math.max(rec.maxWeight ?? 0, s.weight_kg);
+        if (s.reps != null) {
+          rec.maxVolume = Math.max(rec.maxVolume ?? 0, s.weight_kg * s.reps);
+        }
+      }
+      map.set(key, rec);
+    }
+  }
+  return [...map.values()]
+    .filter((r) => r.maxWeight != null)
+    .sort((a, b) => (b.maxWeight ?? 0) - (a.maxWeight ?? 0));
+}
+
 // ── Planificador semanal ─────────────────────────────────────────────────────
 
 /** Lunes (inicio de semana) de la fecha dada, en formato YYYY-MM-DD. */
