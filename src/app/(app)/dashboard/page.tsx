@@ -4,6 +4,7 @@ import {
   CalendarRange,
   Dumbbell,
   LogOut,
+  Settings,
   ShoppingCart,
   Sparkles,
   UtensilsCrossed,
@@ -86,11 +87,18 @@ export default async function DashboardPage() {
             </h1>
           </div>
         </div>
-        <form action={signOut}>
-          <Button variant="ghost" size="icon" type="submit" aria-label="Cerrar sesión">
-            <LogOut className="size-5" />
+        <div className="flex items-center gap-1">
+          <Button asChild variant="ghost" size="icon" aria-label="Ajustes">
+            <Link href="/ajustes">
+              <Settings className="size-5" />
+            </Link>
           </Button>
-        </form>
+          <form action={signOut}>
+            <Button variant="ghost" size="icon" type="submit" aria-label="Cerrar sesión">
+              <LogOut className="size-5" />
+            </Button>
+          </form>
+        </div>
       </header>
 
       {/* Anillos del día */}
