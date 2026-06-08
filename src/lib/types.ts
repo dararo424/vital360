@@ -128,6 +128,49 @@ export type Macros = {
   fat_g: number;
 };
 
+export type Recipe = {
+  id: string;
+  user_id: string;
+  title: string;
+  servings: number;
+  tags: string[] | null;
+  is_favorite: boolean;
+  instructions: string | null;
+  prep_minutes: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type RecipeIngredient = {
+  id: string;
+  recipe_id: string;
+  food_id: string | null;
+  name: string;
+  quantity_g: number;
+  created_at: string;
+};
+
+/** Tags sugeridos para recetas (texto libre además de estos). */
+export const RECIPE_TAGS = [
+  "alto_proteina",
+  "bajo_carbo",
+  "rapido",
+  "post_entreno",
+  "vegetariano",
+  "economico",
+  "meal_prep",
+] as const;
+
+export const RECIPE_TAG_LABELS: Record<string, string> = {
+  alto_proteina: "Alto en proteína",
+  bajo_carbo: "Bajo en carbos",
+  rapido: "Rápido",
+  post_entreno: "Post-entreno",
+  vegetariano: "Vegetariano",
+  economico: "Económico",
+  meal_prep: "Meal prep",
+};
+
 export type BodyMetric = {
   id: string;
   user_id: string;
@@ -223,6 +266,30 @@ export const analyzeResultSchema = z.object({
 });
 export type AnalyzedItem = z.infer<typeof analyzedItemSchema>;
 
+/** Crear/editar una receta. Los ingredientes ad-hoc (food_id null) se
+ * convierten en foods al guardar (recipe_ingredients no almacena macros). */
+export const recipeIngredientInputSchema = z.object({
+  food_id: z.string().uuid().nullable(),
+  name: z.string().trim().min(1, "Nombre requerido").max(120),
+  quantity_g: z.coerce.number().positive().max(5000),
+  kcal: z.coerce.number().min(0),
+  protein_g: z.coerce.number().min(0),
+  carbs_g: z.coerce.number().min(0),
+  fat_g: z.coerce.number().min(0),
+});
+
+export const recipeSchema = z.object({
+  title: z.string().trim().min(1, "Título requerido").max(120),
+  servings: z.coerce.number().int().min(1, "Mínimo 1 porción").max(50),
+  prep_minutes: z.coerce.number().int().min(0).max(1440).optional(),
+  instructions: z.string().trim().max(4000).optional().or(z.literal("")),
+  tags: z.array(z.string().trim().min(1).max(40)).max(12).default([]),
+  ingredients: z
+    .array(recipeIngredientInputSchema)
+    .min(1, "Agrega al menos un ingrediente"),
+});
+export type RecipeInput = z.infer<typeof recipeSchema>;
+
 // ── Helpers de macros ────────────────────────────────────────────────────────
 
 /** Escala los macros de un alimento (definidos por serving_g) a `grams`. */
@@ -235,6 +302,61 @@ export function scaleFood(food: Food, grams: number): Macros {
     fat_g: round1(food.fat_g * f),
   };
 }
+
+/** Macros de una porción de comida concreta (food con serving_g + grams). */
+type FoodMacroSource = Pick<
+  Food,
+  "kcal" | "protein_g" | "carbs_g" | "fat_g" | "serving_g"
+>;
+
+/** Suma macros de ingredientes y calcula total y por porción de una receta. */
+export function computeRecipeMacros(
+  ingredients: { quantity_g: number; food: FoodMacroSource | null }[],
+  servings: number
+): { total: Macros; perServing: Macros } {
+  const total = ingredients.reduce<Macros>(
+    (acc, ing) => {
+      if (!ing.food) return acc;
+      const m = scaleFood(ing.food as Food, ing.quantity_g);
+      return {
+        kcal: acc.kcal + m.kcal,
+        protein_g: acc.protein_g + m.protein_g,
+        carbs_g: acc.carbs_g + m.carbs_g,
+        fat_g: acc.fat_g + m.fat_g,
+      };
+    },
+    { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }
+  );
+  const s = servings > 0 ? servings : 1;
+  return {
+    total,
+    perServing: {
+      kcal: Math.round(total.kcal / s),
+      protein_g: round1(total.protein_g / s),
+      carbs_g: round1(total.carbs_g / s),
+      fat_g: round1(total.fat_g / s),
+    },
+  };
+}
+
+/** Ítem sugerido por la IA para una receta (se vuelve food al guardar). */
+export const suggestedIngredientSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  quantity_g: z.coerce.number().min(0).max(5000),
+  kcal: z.coerce.number().min(0),
+  protein_g: z.coerce.number().min(0),
+  carbs_g: z.coerce.number().min(0),
+  fat_g: z.coerce.number().min(0),
+});
+export const suggestedRecipeSchema = z.object({
+  title: z.string().trim().min(1).max(120),
+  servings: z.coerce.number().int().min(1).max(50),
+  prep_minutes: z.coerce.number().int().min(0).max(1440).optional(),
+  instructions: z.string().trim().max(4000),
+  tags: z.array(z.string()).max(12).default([]),
+  ingredients: z.array(suggestedIngredientSchema).min(1),
+});
+export type SuggestedRecipe = z.infer<typeof suggestedRecipeSchema>;
 
 export function round1(n: number): number {
   return Math.round(n * 10) / 10;

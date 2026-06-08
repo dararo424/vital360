@@ -81,6 +81,68 @@ export async function analyzeImageRaw(
   return result.response.text();
 }
 
+const recipeResponseSchema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    title: { type: SchemaType.STRING },
+    servings: { type: SchemaType.INTEGER },
+    prep_minutes: { type: SchemaType.INTEGER },
+    instructions: { type: SchemaType.STRING },
+    tags: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+    ingredients: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          name: { type: SchemaType.STRING },
+          quantity_g: { type: SchemaType.NUMBER },
+          kcal: { type: SchemaType.NUMBER },
+          protein_g: { type: SchemaType.NUMBER },
+          carbs_g: { type: SchemaType.NUMBER },
+          fat_g: { type: SchemaType.NUMBER },
+        },
+        required: ["name", "quantity_g", "kcal", "protein_g", "carbs_g", "fat_g"],
+      },
+    },
+  },
+  required: ["title", "servings", "instructions", "ingredients", "tags"],
+};
+
+/**
+ * Sugiere una receta que encaje en los macros restantes del día.
+ * Devuelve el texto crudo (JSON); el caller valida con zod.
+ */
+export async function suggestRecipeRaw(
+  remaining: { kcal: number; protein_g: number; carbs_g: number; fat_g: number },
+  notes?: string
+): Promise<string> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY no configurada");
+
+  const prompt = `Eres un asistente de nutrición. Propón UNA receta sencilla y realista que ENCAJE dentro de estos macros restantes del día (no los excedas significativamente):
+- Calorías: ${remaining.kcal} kcal
+- Proteína: ${remaining.protein_g} g
+- Carbohidratos: ${remaining.carbs_g} g
+- Grasa: ${remaining.fat_g} g
+${notes ? `Preferencias del usuario: ${notes}` : ""}
+Responde SOLO JSON (sin markdown) con: title (string, español), servings (entero), prep_minutes (entero), instructions (pasos en español, texto), tags (array de strings cortos en español), ingredients (array de { name, quantity_g, kcal, protein_g, carbs_g, fat_g }).
+Los macros de cada ingrediente son para su quantity_g indicado. La suma de los ingredientes, dividida entre servings, debe acercarse a los macros objetivo. Usa ingredientes comunes y cantidades realistas.`;
+
+  const genAI = new GoogleGenerativeAI(key);
+  const model = genAI.getGenerativeModel({
+    model: MODEL,
+    generationConfig: {
+      responseMimeType: "application/json",
+      // @ts-expect-error responseSchema acepta este shape en runtime
+      responseSchema: recipeResponseSchema,
+      temperature: 0.7,
+    },
+  });
+
+  const result = await model.generateContent(prompt);
+  return result.response.text();
+}
+
 /** Quita fences de markdown por si el modelo los añade pese al responseMimeType. */
 export function stripJsonFences(text: string): string {
   return text
