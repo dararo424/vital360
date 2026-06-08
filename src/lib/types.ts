@@ -128,6 +128,20 @@ export type Macros = {
   fat_g: number;
 };
 
+export type BodyMetric = {
+  id: string;
+  user_id: string;
+  measured_at: string; // ISO date
+  weight_kg: number | null;
+  body_fat_pct: number | null;
+  waist_cm: number | null;
+  chest_cm: number | null;
+  arm_cm: number | null;
+  thigh_cm: number | null;
+  note: string | null;
+  created_at: string;
+};
+
 // ── Schemas de validación (zod) ──────────────────────────────────────────────
 
 export const profileStepSchema = z.object({

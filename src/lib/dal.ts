@@ -3,11 +3,23 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { DailyMacros, NutritionGoal, Profile } from "@/lib/types";
+import type {
+  BodyMetric,
+  DailyMacros,
+  NutritionGoal,
+  Profile,
+} from "@/lib/types";
 
 /** Fecha de hoy en formato YYYY-MM-DD (zona del servidor). */
 export function today(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+/** Fecha hace `days` días en formato YYYY-MM-DD. */
+export function daysAgo(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
 }
 
 /**
@@ -97,6 +109,42 @@ export const getTodayMacros = cache(async (): Promise<DailyMacros | null> => {
 
   return (data as DailyMacros) ?? null;
 });
+
+/** Serie de consumo diario (v_daily_macros) de los últimos `days` días. */
+export const getMacrosRange = cache(
+  async (days: number): Promise<DailyMacros[]> => {
+    const user = await getUser();
+    if (!user) return [];
+
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("v_daily_macros")
+      .select("*")
+      .eq("user_id", user.id)
+      .gte("log_date", daysAgo(days))
+      .order("log_date", { ascending: true });
+
+    return (data as DailyMacros[]) ?? [];
+  }
+);
+
+/** Mediciones corporales recientes (para tendencia de peso). */
+export const getBodyMetrics = cache(
+  async (limit = 60): Promise<BodyMetric[]> => {
+    const user = await getUser();
+    if (!user) return [];
+
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("body_metrics")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("measured_at", { ascending: true })
+      .limit(limit);
+
+    return (data as BodyMetric[]) ?? [];
+  }
+);
 
 /** ¿El usuario completó el onboarding? (perfil con datos + meta vigente) */
 export function isOnboarded(
