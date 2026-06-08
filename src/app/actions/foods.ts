@@ -84,8 +84,9 @@ export async function logMeal(input: LogMealInput): Promise<ActionState> {
       user_id: user.id,
       meal_type: d.meal_type,
       log_date: d.log_date,
-      source: "manual",
+      source: d.source,
       note: d.note || null,
+      ai_raw: d.ai_raw ?? null,
     })
     .select("id")
     .single();
@@ -105,6 +106,7 @@ export async function logMeal(input: LogMealInput): Promise<ActionState> {
       protein_g: it.protein_g,
       carbs_g: it.carbs_g,
       fat_g: it.fat_g,
+      ai_confidence: it.ai_confidence ?? null,
     }))
   );
 

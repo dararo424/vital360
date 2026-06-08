@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    serverActions: {
+      // La foto (base64) viaja a la Server Action analyzeMealPhoto.
+      // La downscalamos en el cliente, pero damos margen.
+      bodySizeLimit: "4mb",
+    },
+  },
 };
 
 export default nextConfig;

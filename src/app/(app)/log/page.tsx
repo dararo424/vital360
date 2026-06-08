@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { Camera, Pencil } from "lucide-react";
 import { getActiveGoal, getTodayMacros, requireOnboarded } from "@/lib/dal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ManualLog } from "./manual-log";
+import { PhotoLog } from "./photo-log";
 
 export const metadata: Metadata = { title: "Registrar · Vital360" };
 
@@ -35,7 +38,22 @@ export default async function LogPage() {
         )}
       </header>
 
-      <ManualLog />
+      <Tabs defaultValue="foto">
+        <TabsList className="w-full">
+          <TabsTrigger value="foto" className="flex-1">
+            <Camera /> Foto
+          </TabsTrigger>
+          <TabsTrigger value="manual" className="flex-1">
+            <Pencil /> Manual
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="foto" className="mt-4">
+          <PhotoLog />
+        </TabsContent>
+        <TabsContent value="manual" className="mt-4">
+          <ManualLog />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

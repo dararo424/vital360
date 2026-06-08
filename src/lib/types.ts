@@ -169,7 +169,7 @@ export const foodSchema = z.object({
 });
 export type FoodInput = z.infer<typeof foodSchema>;
 
-/** Un ítem dentro del registro de comida manual. */
+/** Un ítem dentro del registro de comida (manual o foto). */
 export const logItemSchema = z.object({
   food_id: z.string().uuid().nullable(),
   name: z.string().trim().min(1).max(120),
@@ -178,6 +178,7 @@ export const logItemSchema = z.object({
   protein_g: z.coerce.number().min(0),
   carbs_g: z.coerce.number().min(0),
   fat_g: z.coerce.number().min(0),
+  ai_confidence: z.coerce.number().min(0).max(1).nullable().optional(),
 });
 
 export const logMealSchema = z.object({
@@ -187,9 +188,26 @@ export const logMealSchema = z.object({
     .min(1, "Fecha requerida")
     .refine((v) => !Number.isNaN(Date.parse(v)), "Fecha inválida"),
   note: z.string().trim().max(280).optional().or(z.literal("")),
+  source: z.enum(["manual", "photo"]).default("manual"),
+  ai_raw: z.unknown().optional(),
   items: z.array(logItemSchema).min(1, "Agrega al menos un alimento"),
 });
 export type LogMealInput = z.infer<typeof logMealSchema>;
+
+/** Ítem estimado por Gemini Vision (foto → ítems editables). */
+export const analyzedItemSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  estimated_grams: z.coerce.number().min(0).max(5000),
+  kcal: z.coerce.number().min(0),
+  protein_g: z.coerce.number().min(0),
+  carbs_g: z.coerce.number().min(0),
+  fat_g: z.coerce.number().min(0),
+  confidence: z.coerce.number().min(0).max(1),
+});
+export const analyzeResultSchema = z.object({
+  items: z.array(analyzedItemSchema),
+});
+export type AnalyzedItem = z.infer<typeof analyzedItemSchema>;
 
 // ── Helpers de macros ────────────────────────────────────────────────────────
 

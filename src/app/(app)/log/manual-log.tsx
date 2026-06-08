@@ -119,6 +119,7 @@ export function ManualLog() {
       meal_type: mealType,
       log_date: logDate,
       note,
+      source: "manual" as const,
       items: items.map((it) => {
         const m = scaleFood(it.food, it.quantity_g);
         return {
