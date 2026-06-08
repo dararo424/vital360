@@ -268,7 +268,7 @@ export type WorkoutSet = {
 export type BodyMetric = {
   id: string;
   user_id: string;
-  measured_at: string; // ISO date
+  measured_at: string; // timestamptz
   weight_kg: number | null;
   body_fat_pct: number | null;
   waist_cm: number | null;
@@ -278,6 +278,32 @@ export type BodyMetric = {
   note: string | null;
   created_at: string;
 };
+
+const optNum = (max: number) =>
+  z.coerce.number().min(0).max(max).optional().or(z.literal(""));
+
+export const bodyMetricSchema = z
+  .object({
+    measured_at: z
+      .string()
+      .min(1, "Fecha requerida")
+      .refine((v) => !Number.isNaN(Date.parse(v)), "Fecha inválida"),
+    weight_kg: optNum(500),
+    body_fat_pct: optNum(80),
+    waist_cm: optNum(300),
+    chest_cm: optNum(300),
+    arm_cm: optNum(150),
+    thigh_cm: optNum(150),
+    note: z.string().trim().max(280).optional().or(z.literal("")),
+  })
+  .refine(
+    (d) =>
+      [d.weight_kg, d.body_fat_pct, d.waist_cm, d.chest_cm, d.arm_cm, d.thigh_cm].some(
+        (v) => v !== "" && v !== undefined
+      ),
+    { message: "Ingresa al menos un dato (peso o medida)." }
+  );
+export type BodyMetricInput = z.input<typeof bodyMetricSchema>;
 
 // ── Schemas de validación (zod) ──────────────────────────────────────────────
 
