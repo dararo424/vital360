@@ -133,6 +133,70 @@ export const requireOnboarded = cache(async () => {
   return { user, profile, goal };
 });
 
+export type LoggedMeal = {
+  id: string;
+  meal_type: string;
+  source: string;
+  note: string | null;
+  items: {
+    id: string;
+    name: string;
+    quantity_g: number;
+    kcal: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+  }[];
+  totals: Macros;
+};
+
+/** Comidas registradas en una fecha (food_logs + sus items), por meal_type. */
+export const getFoodLogs = cache(async (date: string): Promise<LoggedMeal[]> => {
+  const user = await getUser();
+  if (!user) return [];
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("food_logs")
+    .select(
+      "id,meal_type,source,note,created_at,food_log_items(id,name,quantity_g,kcal,protein_g,carbs_g,fat_g)"
+    )
+    .eq("user_id", user.id)
+    .eq("log_date", date)
+    .order("created_at", { ascending: true });
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  return ((data as any[]) ?? []).map((log) => {
+    const items = (log.food_log_items ?? []).map((it: any) => ({
+      id: it.id,
+      name: it.name,
+      quantity_g: it.quantity_g,
+      kcal: it.kcal,
+      protein_g: it.protein_g,
+      carbs_g: it.carbs_g,
+      fat_g: it.fat_g,
+    }));
+    const totals = items.reduce(
+      (a: Macros, it: any) => ({
+        kcal: a.kcal + (it.kcal ?? 0),
+        protein_g: a.protein_g + (it.protein_g ?? 0),
+        carbs_g: a.carbs_g + (it.carbs_g ?? 0),
+        fat_g: a.fat_g + (it.fat_g ?? 0),
+      }),
+      { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }
+    );
+    return {
+      id: log.id,
+      meal_type: log.meal_type,
+      source: log.source,
+      note: log.note,
+      items,
+      totals,
+    };
+  });
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+});
+
 /** Consumo agregado de hoy (vista v_daily_macros), o null si no hay registros. */
 export const getTodayMacros = cache(async (): Promise<DailyMacros | null> => {
   const user = await getUser();

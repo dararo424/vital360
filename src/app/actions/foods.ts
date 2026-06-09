@@ -117,6 +117,18 @@ export async function logMeal(input: LogMealInput): Promise<ActionState> {
   }
 
   revalidatePath("/dashboard");
-  revalidatePath("/log");
-  redirect("/dashboard");
+  revalidatePath("/diario");
+  // Lleva al diario del día registrado para que vea su comida al instante.
+  redirect(`/diario?date=${d.log_date}`);
+}
+
+/** Borra una comida registrada (food_log + sus items). */
+export async function deleteFoodLog(id: string): Promise<void> {
+  const user = await getUser();
+  if (!user) return;
+  const supabase = await createClient();
+  await supabase.from("food_log_items").delete().eq("food_log_id", id);
+  await supabase.from("food_logs").delete().eq("id", id).eq("user_id", user.id);
+  revalidatePath("/diario");
+  revalidatePath("/dashboard");
 }

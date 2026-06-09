@@ -103,8 +103,14 @@ export default async function DashboardPage() {
 
       {/* Anillos del día */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">Hoy</CardTitle>
+          <Link
+            href="/diario"
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            Ver diario →
+          </Link>
         </CardHeader>
         <CardContent>
           <DayProgress consumed={consumed} goal={goalMacros} />
