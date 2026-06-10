@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/dal";
 import { generateGroceryRaw, stripJsonFences } from "@/lib/gemini";
+import { checkAiLimit } from "@/lib/rate-limit";
 import { categorizeIngredient, MEAL_TYPES, type MealType } from "@/lib/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -150,13 +151,17 @@ export async function generateGroceryList(
     return { ok: false, error: "No hay comidas que agregar." };
 
   // 1) Intenta con IA (desglosa platos compuestos en ingredientes de mercado).
+  //    Si se alcanzó el límite de IA, degrada al respaldo determinista.
   let aiItems: { name: string; quantity: string; category: string }[] | null = null;
-  try {
-    const raw = await generateGroceryRaw(summaryLines.join("\n"));
-    const parsed = grocerySchema.safeParse(JSON.parse(stripJsonFences(raw)));
-    if (parsed.success && parsed.data.items.length > 0) aiItems = parsed.data.items;
-  } catch (e) {
-    console.error("grocery IA falló, uso respaldo:", e);
+  const lim = await checkAiLimit("grocery");
+  if (lim.ok) {
+    try {
+      const raw = await generateGroceryRaw(summaryLines.join("\n"));
+      const parsed = grocerySchema.safeParse(JSON.parse(stripJsonFences(raw)));
+      if (parsed.success && parsed.data.items.length > 0) aiItems = parsed.data.items;
+    } catch (e) {
+      console.error("grocery IA falló, uso respaldo:", e);
+    }
   }
 
   // 2) Respaldo determinista (suma por nombre, en gramos).

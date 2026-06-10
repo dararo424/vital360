@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getUser, today } from "@/lib/dal";
 import { generatePlanRaw, stripJsonFences } from "@/lib/gemini";
 import { generateAndUploadDishPhoto } from "@/lib/dish-photo";
+import { checkAiLimit } from "@/lib/rate-limit";
 import {
   ageFromBirthDate,
   buildPlanBrief,
@@ -116,8 +117,11 @@ export async function completeSmartOnboarding(
   });
   if (gErr) return { ok: false, error: "No se pudo guardar la meta." };
 
-  // 5. Plan personalizado con IA (no bloquea el onboarding si falla)
+  // 5. Plan personalizado con IA (no bloquea el onboarding si falla o si se
+  //    alcanzó el límite de IA; el usuario puede regenerarlo luego).
   try {
+    const lim = await checkAiLimit("plan");
+    if (!lim.ok) throw new Error(lim.error);
     const raw = await generatePlanRaw(buildPlanBrief(d, estimate));
     const plan = generatedPlanSchema.safeParse(JSON.parse(stripJsonFences(raw)));
     if (plan.success) {
@@ -143,6 +147,9 @@ export async function completeSmartOnboarding(
 export async function regeneratePlan(): Promise<{ ok: boolean; error?: string }> {
   const user = await getUser();
   if (!user) return { ok: false, error: "Sesión expirada." };
+
+  const lim = await checkAiLimit("plan");
+  if (!lim.ok) return { ok: false, error: lim.error };
 
   const supabase = await createClient();
   const { data: profile } = await supabase
@@ -222,6 +229,9 @@ export async function generatePlanRecipePhoto(
 ): Promise<{ ok: boolean; error?: string }> {
   const user = await getUser();
   if (!user) return { ok: false, error: "Sesión expirada." };
+
+  const lim = await checkAiLimit("image");
+  if (!lim.ok) return { ok: false, error: lim.error };
 
   const supabase = await createClient();
   const { data: profile } = await supabase

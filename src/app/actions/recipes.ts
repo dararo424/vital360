@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getUser, getRemainingMacros } from "@/lib/dal";
 import { suggestRecipeRaw, stripJsonFences } from "@/lib/gemini";
 import { generateAndUploadDishPhoto } from "@/lib/dish-photo";
+import { checkAiLimit } from "@/lib/rate-limit";
 import {
   recipeSchema,
   suggestedRecipeSchema,
@@ -172,6 +173,9 @@ export async function generateRecipePhoto(
   const user = await getUser();
   if (!user) return { ok: false, error: "Sesión expirada." };
 
+  const lim = await checkAiLimit("image");
+  if (!lim.ok) return { ok: false, error: lim.error! };
+
   const supabase = await createClient();
   const { data: recipe } = await supabase
     .from("recipes")
@@ -214,6 +218,9 @@ export async function suggestRecipe(
   if (!remaining) {
     return { ok: false, error: "Necesitas una meta de nutrición vigente." };
   }
+
+  const lim = await checkAiLimit("recipe");
+  if (!lim.ok) return { ok: false, error: lim.error! };
 
   let raw: string;
   try {

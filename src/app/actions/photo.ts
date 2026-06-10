@@ -2,6 +2,7 @@
 
 import { analyzeImageRaw, stripJsonFences } from "@/lib/gemini";
 import { getUser } from "@/lib/dal";
+import { checkAiLimit, isQuotaError } from "@/lib/rate-limit";
 import { analyzeResultSchema, type AnalyzedItem } from "@/lib/types";
 
 type AnalyzeResult =
@@ -24,6 +25,9 @@ export async function analyzeMealPhoto(
     return { ok: false, error: "Imagen inválida." };
   }
 
+  const lim = await checkAiLimit("analyze");
+  if (!lim.ok) return { ok: false, error: lim.error! };
+
   let rawText: string;
   try {
     rawText = await analyzeImageRaw(imageBase64, mimeType);
@@ -31,7 +35,9 @@ export async function analyzeMealPhoto(
     console.error("Gemini error:", e);
     return {
       ok: false,
-      error: "No se pudo analizar la foto. Usa el registro manual.",
+      error: isQuotaError(e)
+        ? "La IA está sin cuota por ahora. Intenta más tarde o usa el registro manual."
+        : "No se pudo analizar la foto. Usa el registro manual.",
     };
   }
 
