@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeftRight, Camera, Loader2, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   deleteProgressPhoto,
@@ -53,6 +53,16 @@ export function ProgressPhotos({
   const [busy, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // photos viene ordenada de más reciente a más antigua.
+  const [aId, setAId] = useState(photos[photos.length - 1]?.id ?? "");
+  const [bId, setBId] = useState(photos[0]?.id ?? "");
+  const fmtDate = (iso: string) =>
+    new Date(iso + "T00:00:00").toLocaleDateString("es", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -112,6 +122,46 @@ export function ProgressPhotos({
         </Button>
         {error && <p className="text-sm text-destructive">{error}</p>}
       </div>
+
+      {photos.length >= 2 && (
+        <div className="rounded-xl border p-3">
+          <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+            <ArrowLeftRight className="size-4 text-primary" /> Antes / Después
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { id: aId, set: setAId, label: "Antes" },
+              { id: bId, set: setBId, label: "Después" },
+            ].map((slot) => {
+              const ph = photos.find((p) => p.id === slot.id);
+              return (
+                <div key={slot.label} className="space-y-1.5">
+                  <select
+                    value={slot.id}
+                    onChange={(e) => slot.set(e.target.value)}
+                    className="w-full rounded-md border bg-background px-2 py-1 text-xs"
+                    aria-label={slot.label}
+                  >
+                    {photos.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {slot.label}: {fmtDate(p.taken_on)}
+                      </option>
+                    ))}
+                  </select>
+                  {ph?.url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={ph.url} alt={slot.label} className="aspect-[3/4] w-full rounded-lg border object-cover" />
+                  ) : (
+                    <div className="flex aspect-[3/4] items-center justify-center rounded-lg border bg-muted text-xs text-muted-foreground">
+                      —
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {photos.length > 0 && (
         <div className="grid grid-cols-2 gap-2">
