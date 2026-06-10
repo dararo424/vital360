@@ -2,11 +2,23 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/dal";
+import { generateGroceryRaw, stripJsonFences } from "@/lib/gemini";
 import { categorizeIngredient, MEAL_TYPES, type MealType } from "@/lib/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+const grocerySchema = z.object({
+  items: z.array(
+    z.object({
+      name: z.string().trim().min(1).max(120),
+      quantity: z.string().trim().max(60),
+      category: z.string().trim().max(60),
+    })
+  ),
+});
 
 /** Obtiene (o crea) el plan de la semana para el usuario actual. */
 async function getOrCreatePlan(
@@ -100,7 +112,7 @@ export async function generateGroceryList(
     .from("meal_plans")
     .select(
       "id,meal_plan_entries(servings,recipe_id,food_id," +
-        "recipes(servings,recipe_ingredients(name,quantity_g))," +
+        "recipes(title,servings,recipe_ingredients(name,quantity_g))," +
         "foods(name,serving_g))"
     )
     .eq("user_id", user.id)
@@ -111,26 +123,51 @@ export async function generateGroceryList(
   if (entries.length === 0)
     return { ok: false, error: "El plan de esta semana está vacío." };
 
-  // Agrega gramos por nombre de ingrediente.
+  // Resumen de comidas para la IA (desglosa platos en ingredientes crudos).
+  const summaryLines: string[] = [];
+  // Agregado determinista (respaldo si la IA falla).
   const totals = new Map<string, number>();
   for (const e of entries) {
+    const servings = e.servings || 1;
     if (e.recipes) {
       const recipeServings = e.recipes.servings || 1;
-      const factor = (e.servings || 1) / recipeServings;
+      const factor = servings / recipeServings;
+      const ings = (e.recipes.recipe_ingredients ?? [])
+        .map((ri: any) => `${ri.name} ${Math.round((ri.quantity_g || 0) * factor)}g`)
+        .join(", ");
+      summaryLines.push(
+        `- ${e.recipes.title ?? "Receta"} (${servings} porción/es)${ings ? ` — ingredientes: ${ings}` : ""}`
+      );
       for (const ri of e.recipes.recipe_ingredients ?? []) {
-        const grams = (ri.quantity_g || 0) * factor;
-        totals.set(ri.name, (totals.get(ri.name) ?? 0) + grams);
+        totals.set(ri.name, (totals.get(ri.name) ?? 0) + (ri.quantity_g || 0) * factor);
       }
     } else if (e.foods) {
-      const grams = (e.foods.serving_g || 0) * (e.servings || 1);
-      totals.set(e.foods.name, (totals.get(e.foods.name) ?? 0) + grams);
+      summaryLines.push(`- ${e.foods.name} × ${servings} (${e.foods.serving_g}g c/u)`);
+      totals.set(e.foods.name, (totals.get(e.foods.name) ?? 0) + (e.foods.serving_g || 0) * servings);
     }
   }
+  if (summaryLines.length === 0)
+    return { ok: false, error: "No hay comidas que agregar." };
 
-  if (totals.size === 0)
-    return { ok: false, error: "No hay ingredientes que agregar." };
+  // 1) Intenta con IA (desglosa platos compuestos en ingredientes de mercado).
+  let aiItems: { name: string; quantity: string; category: string }[] | null = null;
+  try {
+    const raw = await generateGroceryRaw(summaryLines.join("\n"));
+    const parsed = grocerySchema.safeParse(JSON.parse(stripJsonFences(raw)));
+    if (parsed.success && parsed.data.items.length > 0) aiItems = parsed.data.items;
+  } catch (e) {
+    console.error("grocery IA falló, uso respaldo:", e);
+  }
 
-  // Crea la lista y sus items.
+  // 2) Respaldo determinista (suma por nombre, en gramos).
+  const finalItems =
+    aiItems ??
+    [...totals.entries()].map(([name, grams]) => ({
+      name,
+      quantity: `${Math.round(grams)} g`,
+      category: categorizeIngredient(name),
+    }));
+
   const { data: list, error: listErr } = await supabase
     .from("grocery_lists")
     .insert({
@@ -142,14 +179,15 @@ export async function generateGroceryList(
     .single();
   if (listErr || !list) return { ok: false, error: "No se pudo crear la lista." };
 
-  const items = [...totals.entries()].map(([name, grams]) => ({
-    grocery_list_id: list.id,
-    name,
-    category: categorizeIngredient(name),
-    quantity: `${Math.round(grams)} g`,
-    is_checked: false,
-  }));
-  const { error: itemsErr } = await supabase.from("grocery_items").insert(items);
+  const { error: itemsErr } = await supabase.from("grocery_items").insert(
+    finalItems.map((it) => ({
+      grocery_list_id: list.id,
+      name: it.name,
+      category: it.category,
+      quantity: it.quantity,
+      is_checked: false,
+    }))
+  );
   if (itemsErr) {
     await supabase.from("grocery_lists").delete().eq("id", list.id);
     return { ok: false, error: "No se pudieron guardar los items." };

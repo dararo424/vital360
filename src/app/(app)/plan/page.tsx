@@ -10,6 +10,7 @@ import {
 import { Planner } from "./planner";
 
 export const metadata: Metadata = { title: "Plan semanal · Vital360" };
+export const maxDuration = 60; // generación de lista con IA
 
 export default async function PlanPage({
   searchParams,

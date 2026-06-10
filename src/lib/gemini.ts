@@ -292,6 +292,59 @@ export async function generateDishImage(
   return null;
 }
 
+const grocerySchema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    items: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          name: { type: SchemaType.STRING },
+          quantity: { type: SchemaType.STRING },
+          category: { type: SchemaType.STRING },
+        },
+        required: ["name", "quantity", "category"],
+      },
+    },
+  },
+  required: ["items"],
+};
+
+/**
+ * A partir de un resumen de comidas planeadas, genera la lista de mercado con
+ * ingredientes CRUDOS (desglosa los platos), consolidada y agrupada por
+ * categoría. Devuelve el texto crudo (JSON); el caller valida con zod.
+ */
+export async function generateGroceryRaw(mealsSummary: string): Promise<string> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY no configurada");
+
+  const prompt = `Eres un asistente de compras de mercado. Con estas comidas planeadas para la semana, genera la LISTA DE MERCADO con los INGREDIENTES CRUDOS a comprar.
+Reglas:
+- DESGLOSA los platos en sus ingredientes (ej. "huevos revueltos con tomate" → huevos, tomate, cebolla, aceite).
+- SUMA las cantidades de los ingredientes que se repitan entre comidas.
+- "quantity" con unidad realista de compra (ej. "12 unidades", "500 g", "1 manojo", "2 litros").
+- Agrupa cada ingrediente en una "category" EXACTAMENTE de esta lista: "Verduras", "Frutas", "Carnes y huevos", "Lácteos", "Granos y legumbres", "Despensa", "Otros".
+Responde SOLO JSON: { "items": [ { "name": string, "quantity": string, "category": string } ] }.
+
+COMIDAS DE LA SEMANA:
+${mealsSummary}`;
+
+  const genAI = new GoogleGenerativeAI(key);
+  const model = genAI.getGenerativeModel({
+    model: MODEL,
+    generationConfig: {
+      responseMimeType: "application/json",
+      // @ts-expect-error responseSchema acepta este shape en runtime
+      responseSchema: grocerySchema,
+      temperature: 0.3,
+    },
+  });
+  const result = await model.generateContent(prompt);
+  return result.response.text();
+}
+
 /** Quita fences de markdown por si el modelo los añade pese al responseMimeType. */
 export function stripJsonFences(text: string): string {
   return text
