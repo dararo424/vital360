@@ -34,9 +34,15 @@ export function MetricsChart({ metrics }: { metrics: BodyMetric[] }) {
   const [active, setActive] = useState<MetricKey>("weight_kg");
   const meta = METRICS.find((m) => m.key === active)!;
 
-  const data = metrics
-    .map((m) => ({ date: m.measured_at.slice(0, 10), value: m[active] }))
-    .filter((d) => d.value != null);
+  const base = metrics
+    .map((m) => ({ date: m.measured_at.slice(0, 10), value: m[active] as number | null }))
+    .filter((d) => d.value != null) as { date: string; value: number }[];
+
+  // Promedio móvil de hasta 7 puntos (suaviza la fluctuación diaria).
+  const data = base.map((d, i) => {
+    const win = base.slice(Math.max(0, i - 6), i + 1).map((x) => x.value);
+    return { ...d, avg: Math.round((win.reduce((a, b) => a + b, 0) / win.length) * 10) / 10 };
+  });
 
   // Solo mostramos métricas que tengan al menos un dato.
   const available = METRICS.filter((m) =>
@@ -76,9 +82,21 @@ export function MetricsChart({ metrics }: { metrics: BodyMetric[] }) {
             <Tooltip
               contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", background: "var(--background)", fontSize: 12 }}
               labelFormatter={(l) => fmtDay(String(l))}
-              formatter={(v) => [`${Number(v)} ${meta.unit}`, meta.label]}
+              formatter={(v, n) => [`${Number(v)} ${meta.unit}`, n]}
             />
-            <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="value" name={meta.label} stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} />
+            {data.length >= 3 && (
+              <Line
+                type="monotone"
+                dataKey="avg"
+                name="Promedio 7"
+                stroke="#10b981"
+                strokeOpacity={0.45}
+                strokeWidth={2}
+                strokeDasharray="5 4"
+                dot={false}
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
       )}

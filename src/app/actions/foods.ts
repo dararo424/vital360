@@ -9,7 +9,9 @@ import { searchOff, lookupBarcode } from "@/lib/openfoodfacts";
 import type { OffDraft } from "@/lib/types";
 import {
   foodSchema,
+  logItemSchema,
   logMealSchema,
+  MEAL_TYPES,
   type ActionState,
   type Food,
   type FoodInput,
@@ -137,6 +139,68 @@ export async function logMeal(input: LogMealInput): Promise<ActionState> {
   revalidatePath("/dashboard");
   revalidatePath("/diario");
   // Lleva al diario del día registrado para que vea su comida al instante.
+  redirect(`/diario?date=${d.log_date}`);
+}
+
+const updateMealSchema = z.object({
+  meal_type: z.enum(MEAL_TYPES, { message: "Selecciona la comida" }),
+  log_date: z
+    .string()
+    .min(1, "Fecha requerida")
+    .refine((v) => !Number.isNaN(Date.parse(v)), "Fecha inválida"),
+  note: z.string().trim().max(280).optional().or(z.literal("")),
+  items: z.array(logItemSchema).min(1, "Debe quedar al menos un alimento"),
+});
+export type UpdateMealInput = z.infer<typeof updateMealSchema>;
+
+/** Edita una comida registrada: actualiza la cabecera y reemplaza los ítems. */
+export async function updateFoodLog(
+  id: string,
+  input: UpdateMealInput
+): Promise<ActionState> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Sesión expirada." };
+
+  const parsed = updateMealSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "Revisa los datos del registro.",
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+    };
+  }
+  const d = parsed.data;
+  const supabase = await createClient();
+
+  const { error: upErr } = await supabase
+    .from("food_logs")
+    .update({
+      meal_type: d.meal_type,
+      log_date: d.log_date,
+      note: d.note || null,
+    })
+    .eq("id", id)
+    .eq("user_id", user.id);
+  if (upErr) return { ok: false, error: "No se pudo actualizar la comida." };
+
+  await supabase.from("food_log_items").delete().eq("food_log_id", id);
+  const { error: itErr } = await supabase.from("food_log_items").insert(
+    d.items.map((it) => ({
+      food_log_id: id,
+      food_id: it.food_id,
+      name: it.name,
+      quantity_g: it.quantity_g,
+      kcal: it.kcal,
+      protein_g: it.protein_g,
+      carbs_g: it.carbs_g,
+      fat_g: it.fat_g,
+      ai_confidence: it.ai_confidence ?? null,
+    }))
+  );
+  if (itErr) return { ok: false, error: "No se pudieron guardar los alimentos." };
+
+  revalidatePath("/diario");
+  revalidatePath("/dashboard");
   redirect(`/diario?date=${d.log_date}`);
 }
 

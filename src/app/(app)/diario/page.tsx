@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Camera, Pencil, Plus, UtensilsCrossed } from "lucide-react";
+import { Camera, Pencil, Plus, SquarePen, UtensilsCrossed } from "lucide-react";
 import {
   getActiveGoal,
   getFoodLogs,
@@ -106,6 +106,11 @@ export default async function DiarioPage({
                     </p>
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-semibold">{m.totals.kcal} kcal</span>
+                      <Button asChild variant="ghost" size="icon-sm" aria-label="Editar comida">
+                        <Link href={`/diario/${m.id}/editar`}>
+                          <SquarePen className="size-4 text-muted-foreground" />
+                        </Link>
+                      </Button>
                       <DeleteMealButton id={m.id} />
                     </div>
                   </div>

@@ -228,6 +228,60 @@ export const getRecentFoods = cache(async (limit = 8): Promise<Food[]> => {
   return out;
 });
 
+export type FoodLogFull = {
+  id: string;
+  meal_type: string;
+  log_date: string;
+  note: string | null;
+  items: {
+    food_id: string | null;
+    name: string;
+    quantity_g: number;
+    kcal: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+    ai_confidence: number | null;
+  }[];
+};
+
+/** Un registro de comida por id (para editar), o null. */
+export const getFoodLog = cache(async (id: string): Promise<FoodLogFull | null> => {
+  const user = await getUser();
+  if (!user) return null;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("food_logs")
+    .select(
+      "id,meal_type,log_date,note,food_log_items(food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g,ai_confidence)"
+    )
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  if (!data) return null;
+  const d = data as any;
+  return {
+    id: d.id,
+    meal_type: d.meal_type,
+    log_date: d.log_date,
+    note: d.note,
+    items: (d.food_log_items ?? []).map((it: any) => ({
+      food_id: it.food_id,
+      name: it.name,
+      quantity_g: it.quantity_g,
+      kcal: it.kcal,
+      protein_g: it.protein_g,
+      carbs_g: it.carbs_g,
+      fat_g: it.fat_g,
+      ai_confidence: it.ai_confidence,
+    })),
+  };
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+});
+
 /** Consumo agregado de hoy (vista v_daily_macros), o null si no hay registros. */
 export const getTodayMacros = cache(async (): Promise<DailyMacros | null> => {
   const user = await getUser();
