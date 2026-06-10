@@ -3,70 +3,55 @@
 Backlog priorizado a partir de una revisión experta (producto, nutrición,
 entrenamiento, startup).
 
-Leyenda: 🔴 alto impacto · 🟡 medio · 🟢 pulido · ✅ hecho
+Leyenda: 🔴 alto valor · 🟡 medio · 🟢 pulido · ✅ hecho
 
 ---
 
-## 🎯 Prioridades (las 5 grandes) — ✅ COMPLETADAS
+## ✅ Completado
 
+**Las 5 prioridades grandes:**
 1. ✅ **Alimentos sin fricción** — Open Food Facts + código de barras (ZXing) + recientes
 2. ✅ **Editar comida registrada** + **promedio móvil del peso**
 3. ✅ **Cerrar el loop plan → acción** (empezar el entreno del día desde el plan)
 4. ✅ **Retención** — recordatorios push (cron diario) + rachas (streaks)
 5. ✅ **Rol de nutricionista/coach** (conectar por código, ver progreso, fijar metas en remoto)
 
-Otros entregables ya hechos en el camino: botón **Instalar app** (PWA), tema
-claro/oscuro automático, rediseño visual, **diario de comidas**, pantalla de
-**Ajustes/Perfil**, **foto IA del plato**, **auto-recalcular meta**.
+**Otros entregables:** botón **Instalar app** (PWA), tema claro/oscuro automático,
+rediseño visual, **diario de comidas**, **Ajustes/Perfil**, **foto IA del plato**,
+**auto-recalcular meta**, fix de **zona horaria** (Bogotá) y de **safe-area** (sin solapes).
 
 ---
 
-## 🥗 Nutrición
+## 📌 Pendiente — ordenado por valor real de uso
 
-- ✅ Open Food Facts + código de barras + recientes.
-- ✅ Editar una comida registrada.
-- 🟡 **Favoritos** y **"repetir comida de ayer"** (recientes ya está).
-- 🟡 **Fibra** (ya se guarda `fiber_g`, falta sumarla/mostrarla) y **agua/hidratación**.
-- 🟡 **Medidas caseras** (1 taza, 1 cda) además de gramos.
-- ✅ Promedio móvil del peso (7 días).
-- 🟡 **Detección de estancamiento** + sugerencia de ajuste.
-- 🟢 **Diet breaks / refeeds** programados para déficits largos.
-- 🟢 Sembrar alimentos comunes latinos como globales.
+### 🔴 Alto valor
+1. **Editar/eliminar series sueltas** de un entreno ya guardado (hoy solo se borra el entreno completo).
+2. **"Repetir comida de ayer"** y **favoritos** de alimentos (complementan "recientes").
+3. **Agua/hidratación** y **fibra** (ya se guarda `fiber_g`, falta sumarla y mostrarla).
+4. **Gráfica de progreso del cliente** en el panel del coach (hoy solo números) + **notas/mensajes** coach ↔ cliente.
 
-## 🏋️ Entrenamiento
+### 🟡 Medio
+5. **Sobrecarga progresiva** en entrenos (sugerir el peso de hoy según tu historial) + **gráfica por ejercicio**.
+6. **Fotos de progreso** (antes/después) — para recomposición valen más que la báscula.
+7. **Detección de estancamiento** del peso + sugerencia de ajuste.
 
-- ✅ Conectar plan IA → entrenos (empezar el entreno del día).
-- 🟡 **Sobrecarga progresiva** (sugerir peso según historial) + **gráficas por ejercicio**.
-- 🟡 **Rutinas/plantillas** reutilizables + **temporizador de descanso**.
-- 🟢 **Instrucciones/video por ejercicio**.
-- 🟢 **Fotos de progreso** (antes/después).
+### 🟢 Pulido / robustez
+8. **Modo offline real** (el service worker hoy solo hace push; falta cachear la app para usarla sin internet).
+9. **Salvaguardas de TCA** (mensajes de apoyo ante metas extremas) + **privacidad/términos** (datos de salud) + **rate-limiting de IA** (control de costos de Gemini).
+10. **Skeletons de carga** y reintentos automáticos cuando la IA falla.
 
-## 📱 Producto / UX
-
-- ✅ Recordatorios push + rachas + botón instalar.
-- 🟡 **Modo offline real** (el service worker hoy solo maneja push; falta cache).
-- 🟢 **Skeletons de carga**, reintentos cuando la IA falla, microcopys.
-- 🟢 Buscar/filtrar en recetas; más vistas del histórico.
-
-## 🚀 Startup / Negocio
-
-- ✅ Rol de coach/nutricionista (vincular + ajustar metas).
-- 🟡 **Mensajería coach ↔ cliente** y notas; gráfica de progreso del cliente en el panel.
-- 🟡 **Privacidad y términos** (datos de salud) + **salvaguardas de TCA**.
-- 🟡 **Rate-limiting de IA** por usuario (control de costos de Gemini).
-- 🟢 Exportar datos (PDF/CSV), analítica de retención, i18n.
-
-## 🔧 Técnico
-
-- 🟢 Monitoreo de errores (Sentry), tests, backups.
-- 🟢 Zona horaria: hoy se usa fecha UTC; revisar para usuarios fuera de UTC.
-- 🟢 Revisar timeouts de IA en Vercel Hobby (ya hay `maxDuration = 60`).
+### 📲 Integración con salud del dispositivo
+11. **Sincronizar con Apple Health (iOS) y Health Connect / Google Fit (Android)** — leer peso, pasos, calorías quemadas, frecuencia cardiaca; y opcionalmente escribir el peso/nutrición que registras en Vital360.
+    > ⚠️ **Nota técnica:** una PWA por sí sola **no puede** acceder a Apple Health (HealthKit no tiene API web) ni a Health Connect. Para hacerlo bien hay que **envolver la app en un contenedor nativo** (ej. Capacitor) y publicar versiones para iOS/Android, o construir apps companion nativas. Es el ítem más grande del roadmap; conviene evaluarlo cuando la app ya tenga uso real.
 
 ---
 
-## ⚙️ Setup pendiente (para que todo funcione en producción)
+## ⚙️ Setup pendiente (producción)
 
-Migraciones SQL a correr en Supabase (en orden): `0002` … `0005`.
-Variables de entorno en Vercel: Supabase (url/anon), `GEMINI_API_KEY`,
-`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `CRON_SECRET`,
-`SUPABASE_SERVICE_ROLE_KEY`. Ver `.env.example`.
+**Migraciones SQL** (Supabase → SQL Editor, en orden): `0002` … `0005`.
+
+**Variables de entorno en Vercel** (Production):
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `GEMINI_API_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`,
+`CRON_SECRET`. (Opcional: `NEXT_PUBLIC_APP_TZ`, `GEMINI_MODEL`, `GEMINI_IMAGE_MODEL`.)
+Tras agregar variables `NEXT_PUBLIC_*`, **redeploy**. Ver `.env.example`.
