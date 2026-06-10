@@ -6,7 +6,10 @@ import { requireOnboarded } from "@/lib/dal";
 import { getClientSummary } from "@/app/actions/coach";
 import { OBJECTIVE_LABELS, type Objective } from "@/lib/nutrition-plan";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getCoachNotes } from "@/app/actions/coach";
+import { NotesThread } from "@/components/notes-thread";
 import { SetGoalForm } from "./set-goal-form";
+import { ClientWeightChart } from "./client-weight-chart";
 
 export const metadata: Metadata = { title: "Cliente · Vital360" };
 
@@ -19,6 +22,7 @@ export default async function ClientPage({
   const { clientId } = await params;
   const s = await getClientSummary(clientId);
   if (!s) notFound();
+  const notes = await getCoachNotes(clientId);
 
   const objLabel = s.objective
     ? OBJECTIVE_LABELS[s.objective as Objective] ?? s.objective
@@ -74,6 +78,18 @@ export default async function ClientPage({
         </Card>
       </div>
 
+      {/* Tendencia de peso */}
+      {s.weightSeries.length >= 2 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Tendencia de peso</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ClientWeightChart data={s.weightSeries} />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Meta vigente */}
       {s.goal && (
         <Card>
@@ -100,6 +116,16 @@ export default async function ClientPage({
             como su meta vigente.
           </p>
           <SetGoalForm clientId={clientId} current={s.goal} />
+        </CardContent>
+      </Card>
+
+      {/* Mensajes */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Mensajes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <NotesThread notes={notes} variant="coach" clientId={clientId} />
         </CardContent>
       </Card>
     </div>

@@ -166,6 +166,7 @@ export type ClientSummary = {
   target_weight_kg: number | null;
   currentWeight: number | null;
   deltaWeight: number | null;
+  weightSeries: { date: string; weight: number }[];
   goal: Macros | null;
   todayKcal: number | null;
   streak: number;
@@ -191,6 +192,10 @@ export async function getClientSummary(
   const w = (weights as any[]) ?? [];
   const currentWeight = w.length ? w[w.length - 1].weight_kg : null;
   const deltaWeight = w.length > 1 ? Math.round((currentWeight - w[0].weight_kg) * 10) / 10 : null;
+  const weightSeries = w.map((x) => ({
+    date: String(x.measured_at).slice(0, 10),
+    weight: x.weight_kg as number,
+  }));
 
   // racha simple
   const set = new Set(((logs as any[]) ?? []).map((r) => String(r.log_date).slice(0, 10)));
@@ -209,6 +214,7 @@ export async function getClientSummary(
     target_weight_kg: (profile as any)?.target_weight_kg ?? null,
     currentWeight,
     deltaWeight,
+    weightSeries,
     goal: goalRow
       ? {
           kcal: (goalRow as any).kcal_target,
@@ -220,6 +226,104 @@ export async function getClientSummary(
     todayKcal: (vd as any)?.kcal ?? null,
     streak,
   };
+}
+
+// ── Notas / mensajes coach ↔ cliente ─────────────────────────────────────────
+
+export type Note = { id: string; body: string; mine: boolean; created_at: string };
+
+async function fetchThread(
+  supabase: any,
+  coachId: string,
+  clientId: string,
+  meId: string
+): Promise<Note[]> {
+  const { data } = await supabase
+    .from("coach_notes")
+    .select("id,body,author_id,created_at")
+    .eq("coach_id", coachId)
+    .eq("client_id", clientId)
+    .order("created_at", { ascending: true })
+    .limit(200);
+  return ((data as any[]) ?? []).map((n) => ({
+    id: n.id,
+    body: n.body,
+    mine: n.author_id === meId,
+    created_at: n.created_at,
+  }));
+}
+
+/** Hilo de notas con un cliente (vista del coach). */
+export async function getCoachNotes(clientId: string): Promise<Note[]> {
+  const user = await getUser();
+  if (!user || !(await assertCoachOf(clientId))) return [];
+  const supabase = await createClient();
+  return fetchThread(supabase, user.id, clientId, user.id);
+}
+
+export async function addCoachNote(
+  clientId: string,
+  body: string
+): Promise<{ ok: boolean; error?: string }> {
+  const user = await getUser();
+  if (!user || !(await assertCoachOf(clientId)))
+    return { ok: false, error: "No autorizado." };
+  const text = body.trim();
+  if (!text) return { ok: false, error: "Escribe un mensaje." };
+  const supabase = await createClient();
+  const { error } = await supabase.from("coach_notes").insert({
+    coach_id: user.id,
+    client_id: clientId,
+    author_id: user.id,
+    body: text.slice(0, 1000),
+  });
+  if (error) return { ok: false, error: "No se pudo enviar." };
+  revalidatePath(`/coach/${clientId}`);
+  return { ok: true };
+}
+
+/** Hilo de notas con mi coach (vista del cliente). */
+export async function getClientThread(): Promise<
+  { coachName: string; notes: Note[] } | null
+> {
+  const user = await getUser();
+  if (!user) return null;
+  const supabase = await createClient();
+  const { data: link } = await supabase
+    .from("coach_links")
+    .select("coach_id,coach_name")
+    .eq("client_id", user.id)
+    .eq("status", "active")
+    .maybeSingle();
+  if (!link?.coach_id) return null;
+  const notes = await fetchThread(supabase, link.coach_id, user.id, user.id);
+  return { coachName: link.coach_name ?? "Tu coach", notes };
+}
+
+export async function addClientNote(
+  body: string
+): Promise<{ ok: boolean; error?: string }> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Sesión expirada." };
+  const supabase = await createClient();
+  const { data: link } = await supabase
+    .from("coach_links")
+    .select("coach_id")
+    .eq("client_id", user.id)
+    .eq("status", "active")
+    .maybeSingle();
+  if (!link?.coach_id) return { ok: false, error: "No tienes coach conectado." };
+  const text = body.trim();
+  if (!text) return { ok: false, error: "Escribe un mensaje." };
+  const { error } = await supabase.from("coach_notes").insert({
+    coach_id: link.coach_id,
+    client_id: user.id,
+    author_id: user.id,
+    body: text.slice(0, 1000),
+  });
+  if (error) return { ok: false, error: "No se pudo enviar." };
+  revalidatePath("/mensajes");
+  return { ok: true };
 }
 
 const goalSchema = z.object({

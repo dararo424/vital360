@@ -315,6 +315,20 @@ export type Streak = {
   last7: { date: string; logged: boolean }[];
 };
 
+/** Agua (ml) registrada hoy. */
+export const getWaterToday = cache(async (): Promise<number> => {
+  const user = await getUser();
+  if (!user) return 0;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("water_logs")
+    .select("ml")
+    .eq("user_id", user.id)
+    .eq("log_date", today())
+    .maybeSingle();
+  return (data?.ml as number) ?? 0;
+});
+
 /** Racha de días consecutivos registrando comida + últimos 7 días. */
 export const getLoggingStreak = cache(async (): Promise<Streak> => {
   const user = await getUser();

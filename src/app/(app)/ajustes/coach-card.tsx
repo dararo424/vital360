@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Check, Copy, Stethoscope, UserCheck } from "lucide-react";
+import { Check, Copy, MessageCircle, Stethoscope, UserCheck } from "lucide-react";
 import {
   createInviteCode,
   disconnectLink,
@@ -42,13 +42,20 @@ export function CoachCard({ initial }: { initial: CoachStatus }) {
   return (
     <div className="space-y-3">
       {status.state === "active" ? (
-        <div className="flex items-center justify-between rounded-lg border bg-primary/5 p-3">
-          <p className="flex items-center gap-2 text-sm">
-            <UserCheck className="size-4 text-primary" />
-            Conectado con <strong>{status.coachName}</strong>
-          </p>
-          <Button variant="ghost" size="sm" className="h-8" onClick={disconnect} disabled={busy}>
-            Desconectar
+        <div className="space-y-2 rounded-lg border bg-primary/5 p-3">
+          <div className="flex items-center justify-between">
+            <p className="flex items-center gap-2 text-sm">
+              <UserCheck className="size-4 text-primary" />
+              Conectado con <strong>{status.coachName}</strong>
+            </p>
+            <Button variant="ghost" size="sm" className="h-8" onClick={disconnect} disabled={busy}>
+              Desconectar
+            </Button>
+          </div>
+          <Button asChild variant="outline" size="sm" className="h-9 w-full">
+            <Link href="/mensajes">
+              <MessageCircle /> Mensajes con tu nutri
+            </Link>
           </Button>
         </div>
       ) : status.state === "pending" ? (

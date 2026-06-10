@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   CalendarRange,
+  Droplet,
   Dumbbell,
   Flame,
   LogOut,
@@ -15,6 +16,7 @@ import {
   getLoggingStreak,
   getMacrosRange,
   getTodayMacros,
+  getWaterToday,
   requireOnboarded,
 } from "@/lib/dal";
 import { signOut } from "@/app/actions/auth";
@@ -23,6 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DayProgress } from "./day-progress";
 import { TrendChart, type TrendPoint } from "./trend-chart";
 import { WeightMini, type WeightPoint } from "./weight-mini";
+import { WaterCard } from "./water-card";
 
 export const metadata: Metadata = { title: "Inicio · Vital360" };
 
@@ -44,11 +47,12 @@ function buildTrend(
 
 export default async function DashboardPage() {
   const { profile, goal } = await requireOnboarded();
-  const [todayMacros, range, metrics, streak] = await Promise.all([
+  const [todayMacros, range, metrics, streak, water] = await Promise.all([
     getTodayMacros(),
     getMacrosRange(30),
     getBodyMetrics(60),
     getLoggingStreak(),
+    getWaterToday(),
   ]);
 
   const firstName = profile.full_name?.split(" ")[0] ?? "Hola";
@@ -149,6 +153,18 @@ export default async function DashboardPage() {
         </CardHeader>
         <CardContent>
           <DayProgress consumed={consumed} goal={goalMacros} />
+        </CardContent>
+      </Card>
+
+      {/* Agua */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Droplet className="size-4 text-sky-500" /> Agua
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <WaterCard initial={water} />
         </CardContent>
       </Card>
 
