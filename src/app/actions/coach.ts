@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getUser, today } from "@/lib/dal";
+import { daysAgo, getUser, today } from "@/lib/dal";
 import type { Macros } from "@/lib/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -170,6 +170,16 @@ export type ClientSummary = {
   goal: Macros | null;
   todayKcal: number | null;
   streak: number;
+  adherence: {
+    windowDays: number;
+    daysLogged: number;
+    avgKcal: number;
+    avgProtein: number;
+    avgCarbs: number;
+    avgFat: number;
+    series: { date: string; kcal: number }[];
+  } | null;
+  photos: { url: string | null; taken_on: string; note: string | null }[];
 };
 
 export async function getClientSummary(
@@ -180,14 +190,23 @@ export async function getClientSummary(
   const admin = createAdminClient();
   const todayStr = today();
 
-  const [{ data: profile }, { data: weights }, { data: goalRow }, { data: vd }, { data: logs }] =
-    await Promise.all([
-      admin.from("profiles").select("full_name,objective,target_weight_kg").eq("id", clientId).maybeSingle(),
-      admin.from("body_metrics").select("weight_kg,measured_at").eq("user_id", clientId).not("weight_kg", "is", null).order("measured_at", { ascending: true }),
-      admin.from("nutrition_goals").select("kcal_target,protein_g,carbs_g,fat_g").eq("user_id", clientId).is("effective_to", null).order("effective_from", { ascending: false }).limit(1).maybeSingle(),
-      admin.from("v_daily_macros").select("kcal").eq("user_id", clientId).eq("log_date", todayStr).maybeSingle(),
-      admin.from("food_logs").select("log_date").eq("user_id", clientId).order("log_date", { ascending: false }).limit(120),
-    ]);
+  const [
+    { data: profile },
+    { data: weights },
+    { data: goalRow },
+    { data: vd },
+    { data: logs },
+    { data: vd14 },
+    { data: photoRows },
+  ] = await Promise.all([
+    admin.from("profiles").select("full_name,objective,target_weight_kg").eq("id", clientId).maybeSingle(),
+    admin.from("body_metrics").select("weight_kg,measured_at").eq("user_id", clientId).not("weight_kg", "is", null).order("measured_at", { ascending: true }),
+    admin.from("nutrition_goals").select("kcal_target,protein_g,carbs_g,fat_g").eq("user_id", clientId).is("effective_to", null).order("effective_from", { ascending: false }).limit(1).maybeSingle(),
+    admin.from("v_daily_macros").select("kcal").eq("user_id", clientId).eq("log_date", todayStr).maybeSingle(),
+    admin.from("food_logs").select("log_date").eq("user_id", clientId).order("log_date", { ascending: false }).limit(120),
+    admin.from("v_daily_macros").select("log_date,kcal,protein_g,carbs_g,fat_g").eq("user_id", clientId).gte("log_date", daysAgo(13)).order("log_date", { ascending: true }),
+    admin.from("progress_photos").select("image_path,taken_on,note").eq("user_id", clientId).order("taken_on", { ascending: false }).limit(9),
+  ]);
 
   const w = (weights as any[]) ?? [];
   const currentWeight = w.length ? w[w.length - 1].weight_kg : null;
@@ -196,6 +215,39 @@ export async function getClientSummary(
     date: String(x.measured_at).slice(0, 10),
     weight: x.weight_kg as number,
   }));
+
+  // adherencia: promedio de los días registrados en la ventana
+  const vdays = (vd14 as any[]) ?? [];
+  const mean = (sel: (r: any) => number) =>
+    vdays.length ? vdays.reduce((a, r) => a + (sel(r) ?? 0), 0) / vdays.length : 0;
+  const adherence = vdays.length
+    ? {
+        windowDays: 14,
+        daysLogged: vdays.length,
+        avgKcal: Math.round(mean((r) => r.kcal)),
+        avgProtein: Math.round(mean((r) => r.protein_g)),
+        avgCarbs: Math.round(mean((r) => r.carbs_g)),
+        avgFat: Math.round(mean((r) => r.fat_g)),
+        series: vdays.map((r) => ({
+          date: String(r.log_date).slice(0, 10),
+          kcal: Math.round(r.kcal),
+        })),
+      }
+    : null;
+
+  // fotos de progreso del cliente (URLs firmadas, bucket privado)
+  const prows = (photoRows as any[]) ?? [];
+  let photos: ClientSummary["photos"] = [];
+  if (prows.length) {
+    const { data: signed } = await admin.storage
+      .from("progress-photos")
+      .createSignedUrls(prows.map((p) => p.image_path), 3600);
+    photos = prows.map((p, i) => ({
+      url: signed?.[i]?.signedUrl ?? null,
+      taken_on: p.taken_on,
+      note: p.note,
+    }));
+  }
 
   // racha simple
   const set = new Set(((logs as any[]) ?? []).map((r) => String(r.log_date).slice(0, 10)));
@@ -225,6 +277,8 @@ export async function getClientSummary(
       : null,
     todayKcal: (vd as any)?.kcal ?? null,
     streak,
+    adherence,
+    photos,
   };
 }
 

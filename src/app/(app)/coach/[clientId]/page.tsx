@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Flame } from "lucide-react";
+import { Camera, ChevronLeft, Flame, Target } from "lucide-react";
 import { requireOnboarded } from "@/lib/dal";
 import { getClientSummary } from "@/app/actions/coach";
 import { OBJECTIVE_LABELS, type Objective } from "@/lib/nutrition-plan";
@@ -10,6 +10,7 @@ import { getCoachNotes } from "@/app/actions/coach";
 import { NotesThread } from "@/components/notes-thread";
 import { SetGoalForm } from "./set-goal-form";
 import { ClientWeightChart } from "./client-weight-chart";
+import { ClientKcalChart } from "./client-kcal-chart";
 
 export const metadata: Metadata = { title: "Cliente · Vital360" };
 
@@ -86,6 +87,75 @@ export default async function ClientPage({
           </CardHeader>
           <CardContent>
             <ClientWeightChart data={s.weightSeries} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Adherencia (últimos 14 días) */}
+      {s.adherence && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Target className="size-4 text-primary" /> Adherencia (14 días)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              <span>
+                <strong>{s.adherence.avgKcal}</strong>
+                {s.goal && (
+                  <span className="text-muted-foreground"> / {s.goal.kcal}</span>
+                )}{" "}
+                kcal prom.
+              </span>
+              <span className="text-muted-foreground">
+                {s.adherence.daysLogged}/{s.adherence.windowDays} días registrados
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Prom. P {s.adherence.avgProtein} · C {s.adherence.avgCarbs} · G{" "}
+              {s.adherence.avgFat} g
+              {s.goal && (
+                <>
+                  {" "}
+                  · meta P {s.goal.protein_g}/C {s.goal.carbs_g}/G {s.goal.fat_g}
+                </>
+              )}
+            </p>
+            <ClientKcalChart data={s.adherence.series} goal={s.goal?.kcal ?? null} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Fotos de progreso del cliente */}
+      {s.photos.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Camera className="size-4 text-primary" /> Fotos de progreso
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-2">
+              {s.photos.map((p, i) => (
+                <div key={i} className="relative overflow-hidden rounded-lg border">
+                  {p.url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={p.url} alt="Progreso" className="aspect-square w-full object-cover" />
+                  ) : (
+                    <div className="flex aspect-square items-center justify-center bg-muted text-[10px] text-muted-foreground">
+                      —
+                    </div>
+                  )}
+                  <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-1 py-0.5 text-[10px] text-white">
+                    {new Date(p.taken_on + "T00:00:00").toLocaleDateString("es", {
+                      day: "numeric",
+                      month: "short",
+                    })}
+                  </span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}

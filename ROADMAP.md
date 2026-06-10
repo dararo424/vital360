@@ -26,6 +26,7 @@ Leyenda: 🔴 alto valor · 🟡 medio · 🟢 pulido · ✅ hecho
 - ✅ **Fibra** (registrar, sumar y mostrar en el diario)
 - ✅ **Detección de estancamiento** del peso + sugerencia de apoyo
 - ✅ **Plantillas/rutinas de entreno** + temporizador de descanso
+- ✅ **Métricas del coach** (adherencia kcal/macros 14 días + fotos del cliente)
 
 **Otros entregables:** instalar app (PWA), tema claro/oscuro, rediseño visual,
 diario de comidas, Ajustes/Perfil, foto IA del plato, auto-recalcular meta,
@@ -37,17 +38,14 @@ coma en el peso** (es-CO).
 
 ## 📌 Pendiente
 
-### 🟡 Medio
-1. **Más métricas en el panel del coach** (adherencia a calorías/macros, fotos de progreso del cliente).
-
 ### 🟢 Pulido / robustez
-2. **Modo offline real** (el service worker hoy solo hace push; falta cachear la app).
-3. **Salvaguardas de TCA** (mensajes de apoyo ante metas extremas) + **privacidad/términos** (datos de salud).
-4. **Skeletons de carga** y reintentos automáticos cuando la IA falla.
-5. **Decimales con coma en TODOS los campos** (hoy solo peso/medidas; faltaría macros, gramos, etc.).
+1. **Modo offline real** (el service worker hoy solo hace push; falta cachear la app).
+2. **Salvaguardas de TCA** (mensajes de apoyo ante metas extremas) + **privacidad/términos** (datos de salud).
+3. **Skeletons de carga** y reintentos automáticos cuando la IA falla.
+4. **Decimales con coma en TODOS los campos** (hoy solo peso/medidas; faltaría macros, gramos, etc.).
 
 ### 📲 Integración con salud del dispositivo
-6. **Apple Health (iOS) + Health Connect / Google Fit (Android)** — leer peso, pasos, calorías quemadas, frecuencia cardiaca; escribir lo que registras.
+5. **Apple Health (iOS) + Health Connect / Google Fit (Android)** — leer peso, pasos, calorías quemadas, frecuencia cardiaca; escribir lo que registras.
    > ⚠️ Una PWA no puede acceder directamente a Apple Health/Health Connect. Requiere **envolver la app en un contenedor nativo** (ej. Capacitor) y publicar en las tiendas. Es el ítem más grande del roadmap.
 
 ---
