@@ -46,12 +46,27 @@ let kc = 0;
 const k = () => `k${kc++}`;
 const emptyRow = (): Row => ({ key: k(), a: "", b: "", rpe: "" });
 
-export function WorkoutEditor() {
-  const [title, setTitle] = useState("");
+export type WorkoutPrefill = {
+  title: string;
+  blocks: { exercise_id: string; name: string; type: ExerciseType; sets: number }[];
+};
+
+export function WorkoutEditor({ prefill }: { prefill?: WorkoutPrefill }) {
+  const [title, setTitle] = useState(prefill?.title ?? "");
   const [date, setDate] = useState(localToday);
   const [duration, setDuration] = useState("");
   const [note, setNote] = useState("");
-  const [blocks, setBlocks] = useState<Block[]>([]);
+  const [blocks, setBlocks] = useState<Block[]>(
+    prefill
+      ? prefill.blocks.map((b) => ({
+          key: k(),
+          exercise_id: b.exercise_id,
+          name: b.name,
+          type: b.type,
+          rows: Array.from({ length: Math.max(1, b.sets) }, () => emptyRow()),
+        }))
+      : []
+  );
   const [pickerOpen, setPickerOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, startSave] = useTransition();

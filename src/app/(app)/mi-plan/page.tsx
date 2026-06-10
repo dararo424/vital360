@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import {
   Dumbbell,
   Lightbulb,
@@ -132,6 +133,11 @@ export default async function MiPlanPage() {
                       <ul className="mt-2 list-disc space-y-0.5 pl-5 text-sm text-muted-foreground">
                         {(s.exercises ?? []).map((ex: string, j: number) => <li key={j}>{ex}</li>)}
                       </ul>
+                      <Button asChild size="sm" variant="outline" className="mt-3 h-8">
+                        <Link href={`/entrenos/nuevo?plan=${i}`}>
+                          <Dumbbell /> Empezar este entreno
+                        </Link>
+                      </Button>
                     </details>
                   ))}
                 </div>
