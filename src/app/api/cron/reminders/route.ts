@@ -32,7 +32,9 @@ export async function GET(request: Request) {
     auth: { persistSession: false },
   });
 
-  const today = new Date().toISOString().slice(0, 10);
+  // "Hoy" en la zona de la app (no UTC), para no recordar a quien ya registró.
+  const tz = process.env.NEXT_PUBLIC_APP_TZ || "America/Bogota";
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(new Date());
   const { data: logs } = await supabase
     .from("food_logs")
     .select("user_id")

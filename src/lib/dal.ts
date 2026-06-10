@@ -50,16 +50,26 @@ function mapRecipe(row: any): RecipeWithMacros {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-/** Fecha de hoy en formato YYYY-MM-DD (zona del servidor). */
-export function today(): string {
-  return new Date().toISOString().slice(0, 10);
+// Zona horaria de la app (por defecto Bogotá). El server calcula "hoy" en esta
+// zona para que coincida con la fecha local del usuario (no UTC).
+export const APP_TZ = process.env.NEXT_PUBLIC_APP_TZ || "America/Bogota";
+
+/** Fecha YYYY-MM-DD de una fecha dada en la zona de la app. */
+export function dateInTz(d: Date): string {
+  // en-CA produce formato ISO (YYYY-MM-DD).
+  return new Intl.DateTimeFormat("en-CA", { timeZone: APP_TZ }).format(d);
 }
 
-/** Fecha hace `days` días en formato YYYY-MM-DD. */
+/** Fecha de hoy (YYYY-MM-DD) en la zona de la app. */
+export function today(): string {
+  return dateInTz(new Date());
+}
+
+/** Fecha hace `days` días (YYYY-MM-DD) en la zona de la app. */
 export function daysAgo(days: number): string {
   const d = new Date();
   d.setDate(d.getDate() - days);
-  return d.toISOString().slice(0, 10);
+  return dateInTz(d);
 }
 
 /**

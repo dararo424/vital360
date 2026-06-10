@@ -210,7 +210,7 @@ export function WorkoutEditor({ prefill }: { prefill?: WorkoutPrefill }) {
         <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Cómo te sentiste, PRs…" />
       </div>
 
-      <div className="sticky bottom-20 space-y-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur">
+      <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] space-y-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur">
         {error && (
           <p className="flex items-center gap-1.5 text-sm text-destructive"><X className="size-4" /> {error}</p>
         )}

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getUser } from "@/lib/dal";
+import { getUser, today } from "@/lib/dal";
 import type { Macros } from "@/lib/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -177,14 +177,14 @@ export async function getClientSummary(
   const coach = await assertCoachOf(clientId);
   if (!coach) return null;
   const admin = createAdminClient();
-  const today = new Date().toISOString().slice(0, 10);
+  const todayStr = today();
 
   const [{ data: profile }, { data: weights }, { data: goalRow }, { data: vd }, { data: logs }] =
     await Promise.all([
       admin.from("profiles").select("full_name,objective,target_weight_kg").eq("id", clientId).maybeSingle(),
       admin.from("body_metrics").select("weight_kg,measured_at").eq("user_id", clientId).not("weight_kg", "is", null).order("measured_at", { ascending: true }),
       admin.from("nutrition_goals").select("kcal_target,protein_g,carbs_g,fat_g").eq("user_id", clientId).is("effective_to", null).order("effective_from", { ascending: false }).limit(1).maybeSingle(),
-      admin.from("v_daily_macros").select("kcal").eq("user_id", clientId).eq("log_date", today).maybeSingle(),
+      admin.from("v_daily_macros").select("kcal").eq("user_id", clientId).eq("log_date", todayStr).maybeSingle(),
       admin.from("food_logs").select("log_date").eq("user_id", clientId).order("log_date", { ascending: false }).limit(120),
     ]);
 
@@ -196,8 +196,8 @@ export async function getClientSummary(
   const set = new Set(((logs as any[]) ?? []).map((r) => String(r.log_date).slice(0, 10)));
   const fmt = (d: Date) => d.toISOString().slice(0, 10);
   let streak = 0;
-  const d = new Date(today + "T00:00:00Z");
-  if (!set.has(today)) d.setUTCDate(d.getUTCDate() - 1);
+  const d = new Date(todayStr + "T00:00:00Z");
+  if (!set.has(todayStr)) d.setUTCDate(d.getUTCDate() - 1);
   while (set.has(fmt(d))) {
     streak++;
     d.setUTCDate(d.getUTCDate() - 1);
@@ -240,16 +240,16 @@ export async function setClientGoal(
     return { ok: false, error: parsed.error.issues.map((i) => i.message).join(" · ") };
 
   const admin = createAdminClient();
-  const today = new Date().toISOString().slice(0, 10);
+  const todayStr = today();
   await admin
     .from("nutrition_goals")
-    .update({ effective_to: today })
+    .update({ effective_to: todayStr })
     .eq("user_id", clientId)
     .is("effective_to", null);
   const { error } = await admin.from("nutrition_goals").insert({
     user_id: clientId,
     ...parsed.data,
-    effective_from: today,
+    effective_from: todayStr,
     effective_to: null,
   });
   if (error) return { ok: false, error: "No se pudo fijar la meta." };

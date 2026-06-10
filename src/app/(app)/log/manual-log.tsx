@@ -385,7 +385,7 @@ export function ManualLog({ recent = [] }: { recent?: Food[] }) {
       </div>
 
       {/* Totales + guardar */}
-      <div className="sticky bottom-20 space-y-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur">
+      <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] space-y-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur">
         <div className="flex items-center justify-between text-sm">
           <span className="font-medium">Total</span>
           <span>
