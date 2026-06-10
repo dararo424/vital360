@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Dumbbell, Plus, SquarePen, Trophy } from "lucide-react";
+import { ClipboardList, Dumbbell, Plus, SquarePen, Trophy } from "lucide-react";
 import {
   computeRecords,
+  getTemplates,
   getWorkouts,
   requireOnboarded,
   type WorkoutWithSets,
@@ -10,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteWorkoutButton } from "./workout-actions";
+import { DeleteTemplateButton, SaveTemplateButton } from "./template-actions";
 
 export const metadata: Metadata = { title: "Entrenos · Vital360" };
 
@@ -44,7 +46,7 @@ function summarize(w: WorkoutWithSets): { name: string; detail: string }[] {
 
 export default async function EntrenosPage() {
   await requireOnboarded();
-  const workouts = await getWorkouts();
+  const [workouts, templates] = await Promise.all([getWorkouts(), getTemplates()]);
   const records = computeRecords(workouts);
 
   return (
@@ -57,6 +59,34 @@ export default async function EntrenosPage() {
           </Link>
         </Button>
       </header>
+
+      {templates.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ClipboardList className="size-4 text-primary" /> Plantillas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {templates.map((t) => (
+              <div key={t.id} className="flex items-center justify-between gap-2 rounded-lg border p-2.5">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{t.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {t.items.map((i) => i.name).join(", ") || "Sin ejercicios"}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button asChild size="sm" className="h-8">
+                    <Link href={`/entrenos/nuevo?template=${t.id}`}>Empezar</Link>
+                  </Button>
+                  <DeleteTemplateButton id={t.id} />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {records.length > 0 && (
         <Card>
@@ -119,6 +149,7 @@ export default async function EntrenosPage() {
                       </p>
                     </div>
                     <div className="flex items-center">
+                      <SaveTemplateButton workoutId={w.id} />
                       <Button asChild variant="ghost" size="icon-sm" aria-label="Editar entreno">
                         <Link href={`/entrenos/${w.id}/editar`}>
                           <SquarePen className="size-4 text-muted-foreground" />

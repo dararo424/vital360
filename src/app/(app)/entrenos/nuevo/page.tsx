@@ -1,11 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getUser, requireOnboarded } from "@/lib/dal";
+import { getTemplate, getUser, requireOnboarded } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { WorkoutEditor, type WorkoutPrefill } from "../workout-editor";
 
 export const metadata: Metadata = { title: "Nuevo entreno · Vital360" };
+
+/** Convierte una plantilla guardada en bloques precargados. */
+async function prefillFromTemplate(id: string): Promise<WorkoutPrefill | undefined> {
+  const tpl = await getTemplate(id);
+  if (!tpl || tpl.items.length === 0) return undefined;
+  return {
+    title: tpl.name,
+    blocks: tpl.items.map((it) => ({
+      exercise_id: it.exercise_id,
+      name: it.name,
+      type: it.type as WorkoutPrefill["blocks"][number]["type"],
+      sets: it.sets,
+    })),
+  };
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /** Convierte una sesión del plan IA en bloques precargados (crea/encuentra ejercicios). */
@@ -57,12 +72,13 @@ async function prefillFromPlan(index: number): Promise<WorkoutPrefill | undefine
 export default async function NuevoEntrenoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string }>;
+  searchParams: Promise<{ plan?: string; template?: string }>;
 }) {
   await requireOnboarded();
-  const { plan } = await searchParams;
-  const prefill =
-    plan != null && !Number.isNaN(Number(plan))
+  const { plan, template } = await searchParams;
+  const prefill = template
+    ? await prefillFromTemplate(template)
+    : plan != null && !Number.isNaN(Number(plan))
       ? await prefillFromPlan(Number(plan))
       : undefined;
 

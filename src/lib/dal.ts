@@ -563,6 +563,55 @@ function mapWorkout(w: any): WorkoutWithSets {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
+export type WorkoutTemplate = {
+  id: string;
+  name: string;
+  items: { exercise_id: string; name: string; type: string; sets: number }[];
+};
+
+function mapTemplate(t: unknown): WorkoutTemplate {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const d = t as any;
+  const items = (d.workout_template_items ?? [])
+    .slice()
+    .sort((a: any, b: any) => a.position - b.position)
+    .map((it: any) => ({
+      exercise_id: it.exercise_id,
+      name: it.exercises?.name ?? "Ejercicio",
+      type: it.exercises?.type ?? "fuerza",
+      sets: it.sets,
+    }));
+  return { id: d.id, name: d.name, items };
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
+
+/** Plantillas de entreno del usuario. */
+export const getTemplates = cache(async (): Promise<WorkoutTemplate[]> => {
+  const user = await getUser();
+  if (!user) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("workout_templates")
+    .select("id,name,workout_template_items(exercise_id,sets,position,exercises(name,type))")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+  return ((data as unknown[]) ?? []).map(mapTemplate);
+});
+
+/** Una plantilla por id (para precargar el editor). */
+export const getTemplate = cache(async (id: string): Promise<WorkoutTemplate | null> => {
+  const user = await getUser();
+  if (!user) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("workout_templates")
+    .select("id,name,workout_template_items(exercise_id,sets,position,exercises(name,type))")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  return data ? mapTemplate(data) : null;
+});
+
 export type ExerciseHistory = {
   name: string;
   type: string;

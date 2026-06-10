@@ -14,6 +14,61 @@ import {
   type WorkoutInput,
 } from "@/lib/types";
 
+/** Guarda un entreno como plantilla reutilizable (ejercicios + nº de series). */
+export async function saveWorkoutAsTemplate(
+  workoutId: string
+): Promise<{ ok: boolean; error?: string }> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Sesión expirada." };
+  const supabase = await createClient();
+
+  const { data: w } = await supabase
+    .from("workouts")
+    .select("title,workout_sets(exercise_id)")
+    .eq("id", workoutId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!w) return { ok: false, error: "Entreno no encontrado." };
+
+  const counts = new Map<string, number>();
+  for (const s of (w as { workout_sets?: { exercise_id: string }[] }).workout_sets ?? []) {
+    counts.set(s.exercise_id, (counts.get(s.exercise_id) ?? 0) + 1);
+  }
+  if (counts.size === 0) return { ok: false, error: "El entreno no tiene ejercicios." };
+
+  const { data: tpl, error: tErr } = await supabase
+    .from("workout_templates")
+    .insert({ user_id: user.id, name: (w as { title: string }).title || "Plantilla" })
+    .select("id")
+    .single();
+  if (tErr || !tpl) return { ok: false, error: "No se pudo crear la plantilla." };
+
+  const { error: iErr } = await supabase.from("workout_template_items").insert(
+    [...counts.entries()].map(([exercise_id, sets], i) => ({
+      template_id: tpl.id,
+      exercise_id,
+      sets,
+      position: i,
+    }))
+  );
+  if (iErr) {
+    await supabase.from("workout_templates").delete().eq("id", tpl.id);
+    return { ok: false, error: "No se pudieron guardar los ejercicios." };
+  }
+
+  revalidatePath("/entrenos");
+  return { ok: true };
+}
+
+/** Borra una plantilla de entreno. */
+export async function deleteTemplate(id: string): Promise<void> {
+  const user = await getUser();
+  if (!user) return;
+  const supabase = await createClient();
+  await supabase.from("workout_templates").delete().eq("id", id).eq("user_id", user.id);
+  revalidatePath("/entrenos");
+}
+
 /** Crea un ejercicio en el catálogo del usuario y lo devuelve. */
 export async function createExercise(
   input: ExerciseInput
