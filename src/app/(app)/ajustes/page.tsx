@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getBodyMetrics, getProfile, requireOnboarded } from "@/lib/dal";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SettingsForm } from "./settings-form";
+import { InstallButton } from "./install-button";
 
 export const metadata: Metadata = { title: "Ajustes · Vital360" };
 export const maxDuration = 60;
@@ -49,6 +51,19 @@ export default async function AjustesPage() {
         }
         weight={weight}
       />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Instalar app</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Instala Vital360 en tu teléfono para abrirla como una app, a pantalla
+            completa y con acceso directo.
+          </p>
+          <InstallButton />
+        </CardContent>
+      </Card>
     </div>
   );
 }

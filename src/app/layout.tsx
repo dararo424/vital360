@@ -44,6 +44,10 @@ export const viewport: Viewport = {
 // pintado (sin parpadeo) y reacciona a cambios en vivo.
 const themeScript = `(function(){try{var m=window.matchMedia('(prefers-color-scheme: dark)');function a(){document.documentElement.classList.toggle('dark',m.matches);}a();m.addEventListener('change',a);}catch(e){}})();`;
 
+// Captura el evento de instalación de la PWA apenas ocurre (puede dispararse
+// antes de montar cualquier componente), para luego ofrecerlo desde Ajustes.
+const installScript = `(function(){window.__deferredInstallPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__deferredInstallPrompt=e;});window.addEventListener('appinstalled',function(){window.__deferredInstallPrompt=null;});})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -57,6 +61,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: installScript }} />
         {children}
       </body>
     </html>
