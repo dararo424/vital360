@@ -65,8 +65,19 @@ export function ProgressForm({ metrics }: { metrics: BodyMetric[] }) {
 
   function submit() {
     setMsg(null);
+    // Acepta coma o punto como separador decimal (es-CO usa coma).
+    const dec = (s: string) => s.replace(",", ".");
     start(async () => {
-      const res = await saveBodyMetric({ measured_at: date, ...fields });
+      const res = await saveBodyMetric({
+        measured_at: date,
+        weight_kg: dec(fields.weight_kg),
+        body_fat_pct: dec(fields.body_fat_pct),
+        waist_cm: dec(fields.waist_cm),
+        chest_cm: dec(fields.chest_cm),
+        arm_cm: dec(fields.arm_cm),
+        thigh_cm: dec(fields.thigh_cm),
+        note: fields.note,
+      });
       if (res && res.ok)
         setMsg({
           ok: true,
@@ -130,7 +141,7 @@ function NumField({
     <div className="space-y-1.5">
       <Label className="text-xs">{label}</Label>
       <Input
-        type="number"
+        type="text"
         inputMode="decimal"
         value={value}
         onChange={(e) => onChange(e.target.value)}

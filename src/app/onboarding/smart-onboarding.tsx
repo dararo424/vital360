@@ -84,6 +84,10 @@ const INIT: V = {
   },
 };
 
+// Acepta coma o punto como separador decimal (es-CO usa coma).
+const dec = (s: string) => s.replace(",", ".");
+const num = (s: string) => Number(dec(s));
+
 export function SmartOnboarding({ defaultName }: { defaultName: string }) {
   const [step, setStep] = useState(0);
   const [v, setV] = useState<V>({ ...INIT, full_name: defaultName });
@@ -102,7 +106,7 @@ export function SmartOnboarding({ defaultName }: { defaultName: string }) {
   const recommended = useMemo(
     () =>
       v.height_cm && v.weight_kg
-        ? recommendObjective(Number(v.height_cm), Number(v.weight_kg))
+        ? recommendObjective(num(v.height_cm), num(v.weight_kg))
         : null,
     [v.height_cm, v.weight_kg]
   );
@@ -113,12 +117,12 @@ export function SmartOnboarding({ defaultName }: { defaultName: string }) {
     return computePlan({
       sex: v.sex,
       age: ageFromBirthDate(v.birth_date),
-      height_cm: Number(v.height_cm),
-      weight_kg: Number(v.weight_kg),
+      height_cm: num(v.height_cm),
+      weight_kg: num(v.weight_kg),
       activity_level: v.activity_level,
       objective: v.objective,
       intensity: v.intensity,
-      target_weight_kg: v.target_weight_kg ? Number(v.target_weight_kg) : null,
+      target_weight_kg: v.target_weight_kg ? num(v.target_weight_kg) : null,
     });
   }, [v]);
 
@@ -160,11 +164,11 @@ export function SmartOnboarding({ defaultName }: { defaultName: string }) {
         full_name: v.full_name,
         sex: v.sex as Sex,
         birth_date: v.birth_date,
-        height_cm: v.height_cm,
-        weight_kg: v.weight_kg,
+        height_cm: dec(v.height_cm),
+        weight_kg: dec(v.weight_kg),
         activity_level: v.activity_level as ActivityLevel,
         objective: v.objective as Objective,
-        target_weight_kg: v.target_weight_kg,
+        target_weight_kg: v.target_weight_kg ? dec(v.target_weight_kg) : "",
         intensity: v.intensity as Intensity,
         adaptive: v.adaptive,
         questionnaire: v.q,
@@ -202,7 +206,7 @@ export function SmartOnboarding({ defaultName }: { defaultName: string }) {
         <Field label="Fecha de nacimiento"><Input type="date" value={v.birth_date} onChange={(e) => set("birth_date", e.target.value)} /></Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Estatura (cm)"><Input type="number" inputMode="numeric" value={v.height_cm} onChange={(e) => set("height_cm", e.target.value)} placeholder="170" /></Field>
-          <Field label="Peso (kg)"><Input type="number" inputMode="decimal" value={v.weight_kg} onChange={(e) => set("weight_kg", e.target.value)} placeholder="80" /></Field>
+          <Field label="Peso (kg)"><Input type="text" inputMode="decimal" value={v.weight_kg} onChange={(e) => set("weight_kg", e.target.value)} placeholder="80" /></Field>
         </div>
       </Section>
 
@@ -241,7 +245,7 @@ export function SmartOnboarding({ defaultName }: { defaultName: string }) {
             value={v.objective} onChange={(x) => set("objective", x as Objective)} />
           {v.objective && <p className="mt-1.5 text-xs text-muted-foreground">{OBJECTIVE_HINTS[v.objective]}</p>}
         </Field>
-        <Field label="Peso meta (kg, opcional)"><Input type="number" inputMode="decimal" value={v.target_weight_kg} onChange={(e) => set("target_weight_kg", e.target.value)} placeholder="73" /></Field>
+        <Field label="Peso meta (kg, opcional)"><Input type="text" inputMode="decimal" value={v.target_weight_kg} onChange={(e) => set("target_weight_kg", e.target.value)} placeholder="73" /></Field>
         <Field label="Intensidad del plan">
           <Options vertical options={INTENSITIES.map((i) => [i, INTENSITY_LABELS[i]])} value={v.intensity} onChange={(x) => set("intensity", x as Intensity)} />
           {v.intensity && <p className="mt-1.5 text-xs text-muted-foreground">{INTENSITY_HINTS[v.intensity]}</p>}
