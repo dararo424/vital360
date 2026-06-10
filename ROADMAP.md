@@ -1,36 +1,41 @@
 # 🗺️ Vital360 — Roadmap
 
 Backlog priorizado a partir de una revisión experta (producto, nutrición,
-entrenamiento, startup). El MVP está completo y desplegado; esto es lo que
-falta para que la app **enganche y escale**.
+entrenamiento, startup).
 
-Leyenda: 🔴 alto impacto · 🟡 medio · 🟢 pulido · ✅ hecho · 🚧 en curso
+Leyenda: 🔴 alto impacto · 🟡 medio · 🟢 pulido · ✅ hecho
 
 ---
 
-## 🎯 Orden recomendado
+## 🎯 Prioridades (las 5 grandes) — ✅ COMPLETADAS
 
-1. 🔴 **Alimentos sin fricción** — Open Food Facts + código de barras + recientes/favoritos 🚧
-2. 🔴 **Editar comida registrada** + **promedio móvil del peso**
-3. 🔴 **Cerrar el loop plan → acción** (empezar entreno / agregar receta del plan al día)
-4. 🟡 **Retención** — recordatorios/notificaciones + rachas (streaks)
-5. 🟡 **Rol de nutricionista/coach** (el diferenciador: tu nutri ajusta tus metas en remoto)
+1. ✅ **Alimentos sin fricción** — Open Food Facts + código de barras (ZXing) + recientes
+2. ✅ **Editar comida registrada** + **promedio móvil del peso**
+3. ✅ **Cerrar el loop plan → acción** (empezar el entreno del día desde el plan)
+4. ✅ **Retención** — recordatorios push (cron diario) + rachas (streaks)
+5. ✅ **Rol de nutricionista/coach** (conectar por código, ver progreso, fijar metas en remoto)
+
+Otros entregables ya hechos en el camino: botón **Instalar app** (PWA), tema
+claro/oscuro automático, rediseño visual, **diario de comidas**, pantalla de
+**Ajustes/Perfil**, **foto IA del plato**, **auto-recalcular meta**.
 
 ---
 
 ## 🥗 Nutrición
 
-- 🔴 **Base de alimentos**: integrar **Open Food Facts** (gratis, en español, con códigos de barras) + sembrar alimentos comunes latinos. *(la tabla `foods` arranca vacía → fricción #1)*
-- 🔴 **Recientes / favoritos / "repetir comida de ayer"**.
-- 🔴 **Editar** una comida registrada (hoy solo se borra).
+- ✅ Open Food Facts + código de barras + recientes.
+- ✅ Editar una comida registrada.
+- 🟡 **Favoritos** y **"repetir comida de ayer"** (recientes ya está).
 - 🟡 **Fibra** (ya se guarda `fiber_g`, falta sumarla/mostrarla) y **agua/hidratación**.
 - 🟡 **Medidas caseras** (1 taza, 1 cda) además de gramos.
-- 🟡 **Promedio móvil del peso** (7 días) y **detección de estancamiento**.
+- ✅ Promedio móvil del peso (7 días).
+- 🟡 **Detección de estancamiento** + sugerencia de ajuste.
 - 🟢 **Diet breaks / refeeds** programados para déficits largos.
+- 🟢 Sembrar alimentos comunes latinos como globales.
 
 ## 🏋️ Entrenamiento
 
-- 🔴 **Conectar plan IA → entrenos**: "empezar el entreno del Día 1" desde el plan.
+- ✅ Conectar plan IA → entrenos (empezar el entreno del día).
 - 🟡 **Sobrecarga progresiva** (sugerir peso según historial) + **gráficas por ejercicio**.
 - 🟡 **Rutinas/plantillas** reutilizables + **temporizador de descanso**.
 - 🟢 **Instrucciones/video por ejercicio**.
@@ -38,19 +43,30 @@ Leyenda: 🔴 alto impacto · 🟡 medio · 🟢 pulido · ✅ hecho · 🚧 en 
 
 ## 📱 Producto / UX
 
-- 🟡 **Recordatorios/notificaciones** (registrar comidas, pesarse) + **rachas**.
-- 🟡 **Modo offline real** (service worker / cache de la PWA).
+- ✅ Recordatorios push + rachas + botón instalar.
+- 🟡 **Modo offline real** (el service worker hoy solo maneja push; falta cache).
 - 🟢 **Skeletons de carga**, reintentos cuando la IA falla, microcopys.
-- 🟢 Buscar/filtrar en recetas y alimentos.
+- 🟢 Buscar/filtrar en recetas; más vistas del histórico.
 
 ## 🚀 Startup / Negocio
 
-- 🟡 **Rol de coach/nutricionista**: vincular a tu nutri para que vea progreso y ajuste metas (encaja con el principio de la app y con compartirla en familia).
-- 🟡 **Privacidad y términos** (datos de salud) + **salvaguardas de TCA** (mensajes de apoyo ante metas extremas).
+- ✅ Rol de coach/nutricionista (vincular + ajustar metas).
+- 🟡 **Mensajería coach ↔ cliente** y notas; gráfica de progreso del cliente en el panel.
+- 🟡 **Privacidad y términos** (datos de salud) + **salvaguardas de TCA**.
 - 🟡 **Rate-limiting de IA** por usuario (control de costos de Gemini).
 - 🟢 Exportar datos (PDF/CSV), analítica de retención, i18n.
 
 ## 🔧 Técnico
 
 - 🟢 Monitoreo de errores (Sentry), tests, backups.
+- 🟢 Zona horaria: hoy se usa fecha UTC; revisar para usuarios fuera de UTC.
 - 🟢 Revisar timeouts de IA en Vercel Hobby (ya hay `maxDuration = 60`).
+
+---
+
+## ⚙️ Setup pendiente (para que todo funcione en producción)
+
+Migraciones SQL a correr en Supabase (en orden): `0002` … `0005`.
+Variables de entorno en Vercel: Supabase (url/anon), `GEMINI_API_KEY`,
+`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `CRON_SECRET`,
+`SUPABASE_SERVICE_ROLE_KEY`. Ver `.env.example`.
