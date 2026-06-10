@@ -19,6 +19,26 @@ import {
 } from "@/lib/types";
 
 /**
+ * Inserta ítems de comida tolerando que la columna `fiber_g` aún no exista
+ * (migración 0011 sin aplicar): en ese caso reintenta sin `fiber_g`.
+ */
+async function insertFoodLogItems(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  rows: Record<string, unknown>[]
+) {
+  const { error } = await supabase.from("food_log_items").insert(rows);
+  if (error && /fiber_g/i.test(`${error.message} ${error.code}`)) {
+    const stripped = rows.map((r) => {
+      const copy = { ...r };
+      delete copy.fiber_g;
+      return copy;
+    });
+    return (await supabase.from("food_log_items").insert(stripped)).error;
+  }
+  return error;
+}
+
+/**
  * Crea un alimento en el catálogo del usuario (foods.user_id = usuario).
  * Devuelve el alimento creado para poder agregarlo de inmediato como ítem.
  */
@@ -134,7 +154,8 @@ export async function logMeal(input: LogMealInput): Promise<ActionState> {
   }
 
   // 2. Ítems.
-  const { error: itemsError } = await supabase.from("food_log_items").insert(
+  const itemsError = await insertFoodLogItems(
+    supabase,
     d.items.map((it) => ({
       food_log_id: log.id,
       food_id: it.food_id,
@@ -203,7 +224,8 @@ export async function updateFoodLog(
   if (upErr) return { ok: false, error: "No se pudo actualizar la comida." };
 
   await supabase.from("food_log_items").delete().eq("food_log_id", id);
-  const { error: itErr } = await supabase.from("food_log_items").insert(
+  const itErr = await insertFoodLogItems(
+    supabase,
     d.items.map((it) => ({
       food_log_id: id,
       food_id: it.food_id,
@@ -230,14 +252,18 @@ export async function repeatFoodLog(id: string): Promise<ActionState> {
   if (!user) return { ok: false, error: "Sesión expirada." };
   const supabase = await createClient();
 
-  const { data: log } = await supabase
-    .from("food_logs")
-    .select(
-      "meal_type,note,food_log_items(food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g,fiber_g,ai_confidence)"
-    )
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const sel = (withFiber: boolean) =>
+    supabase
+      .from("food_logs")
+      .select(
+        `meal_type,note,food_log_items(food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g${withFiber ? ",fiber_g" : ""},ai_confidence)`
+      )
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+  let logRes = await sel(true);
+  if (logRes.error) logRes = await sel(false);
+  const log = logRes.data;
   if (!log) return { ok: false, error: "Comida no encontrada." };
 
   const items = (log as { food_log_items?: unknown[] }).food_log_items ?? [];
@@ -257,7 +283,8 @@ export async function repeatFoodLog(id: string): Promise<ActionState> {
     .single();
   if (lErr || !newLog) return { ok: false, error: "No se pudo repetir la comida." };
 
-  const { error: iErr } = await supabase.from("food_log_items").insert(
+  const iErr = await insertFoodLogItems(
+    supabase,
     (items as Record<string, unknown>[]).map((it) => ({
       food_log_id: newLog.id,
       food_id: it.food_id,

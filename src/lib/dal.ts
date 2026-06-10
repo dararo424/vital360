@@ -170,14 +170,20 @@ export const getFoodLogs = cache(async (date: string): Promise<LoggedMeal[]> => 
   if (!user) return [];
 
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("food_logs")
-    .select(
-      "id,meal_type,source,note,created_at,food_log_items(id,food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g,fiber_g)"
-    )
-    .eq("user_id", user.id)
-    .eq("log_date", date)
-    .order("created_at", { ascending: true });
+  // Tolerante a que la migración de fibra aún no esté aplicada: si `fiber_g`
+  // no existe todavía, reintenta sin ella en vez de dejar el diario vacío.
+  const sel = (withFiber: boolean) =>
+    supabase
+      .from("food_logs")
+      .select(
+        `id,meal_type,source,note,created_at,food_log_items(id,food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g${withFiber ? ",fiber_g" : ""})`
+      )
+      .eq("user_id", user.id)
+      .eq("log_date", date)
+      .order("created_at", { ascending: true });
+  let res = await sel(true);
+  if (res.error) res = await sel(false);
+  const data = res.data;
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   return ((data as any[]) ?? []).map((log) => {
@@ -284,14 +290,19 @@ export const getFoodLog = cache(async (id: string): Promise<FoodLogFull | null> 
   if (!user) return null;
 
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("food_logs")
-    .select(
-      "id,meal_type,log_date,note,food_log_items(food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g,fiber_g,ai_confidence)"
-    )
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // Tolerante a que la migración de fibra aún no esté aplicada.
+  const sel = (withFiber: boolean) =>
+    supabase
+      .from("food_logs")
+      .select(
+        `id,meal_type,log_date,note,food_log_items(food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g${withFiber ? ",fiber_g" : ""},ai_confidence)`
+      )
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+  let res = await sel(true);
+  if (res.error) res = await sel(false);
+  const data = res.data;
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   if (!data) return null;
