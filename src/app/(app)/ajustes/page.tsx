@@ -5,6 +5,7 @@ import { getBodyMetrics, getProfile, requireOnboarded } from "@/lib/dal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SettingsForm } from "./settings-form";
 import { InstallButton } from "./install-button";
+import { NotificationsToggle } from "./notifications-toggle";
 
 export const metadata: Metadata = { title: "Ajustes · Vital360" };
 export const maxDuration = 60;
@@ -62,6 +63,19 @@ export default async function AjustesPage() {
             completa y con acceso directo.
           </p>
           <InstallButton />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Recordatorios</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Recibe una notificación si llega la tarde y aún no registraste tus
+            comidas, para no perder tu racha.
+          </p>
+          <NotificationsToggle />
         </CardContent>
       </Card>
     </div>
