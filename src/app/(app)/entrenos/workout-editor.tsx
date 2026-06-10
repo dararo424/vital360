@@ -34,6 +34,7 @@ type Block = {
   name: string;
   type: ExerciseType;
   rows: Row[];
+  hint?: string | null;
 };
 
 function localToday(): string {
@@ -109,12 +110,65 @@ export function WorkoutEditor({
   const [error, setError] = useState<string | null>(null);
   const [saving, startSave] = useTransition();
 
-  function addExercise(ex: Exercise) {
+  async function addExercise(ex: Exercise) {
+    setPickerOpen(false);
+    const blockKey = k();
+    // Agrega el bloque ya (vacío) y luego precarga la última marca.
     setBlocks((p) => [
       ...p,
-      { key: k(), exercise_id: ex.id, name: ex.name, type: ex.type, rows: [emptyRow()] },
+      { key: blockKey, exercise_id: ex.id, name: ex.name, type: ex.type, rows: [emptyRow()] },
     ]);
-    setPickerOpen(false);
+
+    try {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("workout_sets")
+        .select("reps,weight_kg,duration_sec,distance_m,workout_id,workouts(workout_date)")
+        .eq("exercise_id", ex.id)
+        .order("created_at", { ascending: false })
+        .limit(15);
+      if (!data || data.length === 0) return;
+
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      const latestWid = (data[0] as any).workout_id;
+      const sets = (data as any[]).filter((s) => s.workout_id === latestWid).reverse();
+      const date = (data[0] as any).workouts?.workout_date?.slice(0, 10) ?? "";
+      /* eslint-enable @typescript-eslint/no-explicit-any */
+      const rows: Row[] = sets.map((s) =>
+        ex.type === "cardio"
+          ? {
+              key: k(),
+              a: s.duration_sec ? String(Math.round(s.duration_sec / 60)) : "",
+              b: s.distance_m ? String(s.distance_m / 1000) : "",
+              rpe: "",
+            }
+          : {
+              key: k(),
+              a: s.reps != null ? String(s.reps) : "",
+              b: s.weight_kg != null ? String(s.weight_kg) : "",
+              rpe: "",
+            }
+      );
+      const hint =
+        "Última vez" +
+        (date ? ` (${date})` : "") +
+        ": " +
+        sets
+          .map((s) =>
+            ex.type === "cardio"
+              ? `${Math.round((s.duration_sec || 0) / 60)} min`
+              : `${s.reps ?? "-"}×${s.weight_kg ?? 0}kg`
+          )
+          .join(", ");
+
+      setBlocks((p) =>
+        p.map((b) =>
+          b.key === blockKey ? { ...b, rows: rows.length ? rows : b.rows, hint } : b
+        )
+      );
+    } catch {
+      /* sin historial */
+    }
   }
   function addRow(bk: string) {
     setBlocks((p) =>
@@ -214,6 +268,12 @@ export function WorkoutEditor({
                 <Trash2 className="size-4" />
               </button>
             </div>
+
+            {b.hint && (
+              <p className="mb-2 rounded-md bg-muted/50 px-2 py-1 text-[11px] text-muted-foreground">
+                💪 {b.hint}
+              </p>
+            )}
 
             <div className="mb-1 grid grid-cols-[1.5rem_1fr_1fr_3rem_1.5rem] items-center gap-2 text-[11px] text-muted-foreground">
               <span>#</span>

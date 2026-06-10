@@ -315,6 +315,40 @@ export type Streak = {
   last7: { date: string; logged: boolean }[];
 };
 
+export type ProgressPhoto = {
+  id: string;
+  url: string | null;
+  taken_on: string;
+  note: string | null;
+};
+
+/** Fotos de progreso del usuario, con URLs firmadas (bucket privado). */
+export const getProgressPhotos = cache(async (): Promise<ProgressPhoto[]> => {
+  const user = await getUser();
+  if (!user) return [];
+  const supabase = await createClient();
+  const { data: rows } = await supabase
+    .from("progress_photos")
+    .select("id,image_path,taken_on,note")
+    .eq("user_id", user.id)
+    .order("taken_on", { ascending: false })
+    .limit(60);
+  if (!rows?.length) return [];
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const paths = (rows as any[]).map((r) => r.image_path);
+  const { data: signed } = await supabase.storage
+    .from("progress-photos")
+    .createSignedUrls(paths, 3600);
+  return (rows as any[]).map((r, i) => ({
+    id: r.id,
+    url: signed?.[i]?.signedUrl ?? null,
+    taken_on: r.taken_on,
+    note: r.note,
+  }));
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+});
+
 /** Agua (ml) registrada hoy. */
 export const getWaterToday = cache(async (): Promise<number> => {
   const user = await getUser();
@@ -446,6 +480,7 @@ export type WorkoutWithSets = {
 };
 
 export type ExerciseRecord = {
+  exerciseId: string;
   name: string;
   type: string;
   maxWeight: number | null;
@@ -476,6 +511,52 @@ function mapWorkout(w: any): WorkoutWithSets {
   };
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
+
+export type ExerciseHistory = {
+  name: string;
+  type: string;
+  sessions: { date: string; maxWeight: number | null; volume: number; sets: number }[];
+};
+
+/** Historial y progresión de un ejercicio (sesiones con mejor peso y volumen). */
+export const getExerciseHistory = cache(
+  async (exerciseId: string): Promise<ExerciseHistory | null> => {
+    const user = await getUser();
+    if (!user) return null;
+    const supabase = await createClient();
+
+    const { data: ex } = await supabase
+      .from("exercises")
+      .select("name,type")
+      .eq("id", exerciseId)
+      .maybeSingle();
+    if (!ex) return null;
+
+    const { data } = await supabase
+      .from("workout_sets")
+      .select("reps,weight_kg,workout_id,workouts(workout_date)")
+      .eq("exercise_id", exerciseId)
+      .limit(1000);
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const byWorkout = new Map<string, { date: string; maxWeight: number | null; volume: number; sets: number }>();
+    for (const s of (data as any[]) ?? []) {
+      const date = s.workouts?.workout_date?.slice(0, 10) ?? "";
+      if (!date) continue;
+      const cur = byWorkout.get(s.workout_id) ?? { date, maxWeight: null, volume: 0, sets: 0 };
+      cur.sets += 1;
+      if (s.weight_kg != null) {
+        cur.maxWeight = Math.max(cur.maxWeight ?? 0, s.weight_kg);
+        if (s.reps != null) cur.volume += s.weight_kg * s.reps;
+      }
+      byWorkout.set(s.workout_id, cur);
+    }
+
+    const sessions = [...byWorkout.values()].sort((a, b) => a.date.localeCompare(b.date));
+    return { name: (ex as any).name, type: (ex as any).type, sessions };
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+  }
+);
 
 /** Historial de entrenos del usuario (con sets y ejercicios). */
 export const getWorkouts = cache(async (): Promise<WorkoutWithSets[]> => {
@@ -580,7 +661,13 @@ export function computeRecords(workouts: WorkoutWithSets[]): ExerciseRecord[] {
       const key = s.exercise.name;
       const rec =
         map.get(key) ??
-        { name: key, type: s.exercise.type, maxWeight: null, maxVolume: null };
+        {
+          exerciseId: s.exercise_id,
+          name: key,
+          type: s.exercise.type,
+          maxWeight: null,
+          maxVolume: null,
+        };
       if (s.weight_kg != null) {
         rec.maxWeight = Math.max(rec.maxWeight ?? 0, s.weight_kg);
         if (s.reps != null) {

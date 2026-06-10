@@ -68,12 +68,17 @@ export default async function EntrenosPage() {
           <CardContent>
             <ul className="divide-y text-sm">
               {records.slice(0, 6).map((r) => (
-                <li key={r.name} className="flex items-center justify-between py-2">
-                  <span>{r.name}</span>
-                  <span className="text-muted-foreground">
-                    {r.maxWeight} kg
-                    {r.maxVolume ? ` · vol ${Math.round(r.maxVolume)}` : ""}
-                  </span>
+                <li key={r.name}>
+                  <Link
+                    href={`/entrenos/ejercicio/${r.exerciseId}`}
+                    className="flex items-center justify-between py-2 hover:text-primary"
+                  >
+                    <span>{r.name}</span>
+                    <span className="text-muted-foreground">
+                      {r.maxWeight} kg
+                      {r.maxVolume ? ` · vol ${Math.round(r.maxVolume)}` : ""}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>

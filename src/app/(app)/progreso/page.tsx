@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
-import { LineChart } from "lucide-react";
-import { getBodyMetrics, requireOnboarded } from "@/lib/dal";
+import { Camera, LineChart } from "lucide-react";
+import { getBodyMetrics, getProgressPhotos, requireOnboarded } from "@/lib/dal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressForm } from "./progress-form";
 import { MetricsChart } from "./metrics-chart";
 import { DeleteMetricButton } from "./metric-actions";
+import { ProgressPhotos } from "./progress-photos";
 
 export const metadata: Metadata = { title: "Progreso · Vital360" };
 
 export default async function ProgresoPage() {
-  const { profile } = await requireOnboarded();
-  const metrics = await getBodyMetrics(180); // ascendente por fecha
+  const { user, profile } = await requireOnboarded();
+  const [metrics, photos] = await Promise.all([
+    getBodyMetrics(180), // ascendente por fecha
+    getProgressPhotos(),
+  ]);
   const history = [...metrics].reverse();
   const adaptive = (profile as { adaptive?: boolean | null }).adaptive ?? false;
 
@@ -45,6 +49,17 @@ export default async function ProgresoPage() {
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Camera className="size-4" /> Fotos de progreso
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ProgressPhotos userId={user.id} photos={photos} />
+        </CardContent>
+      </Card>
 
       {history.length > 0 && (
         <Card>
