@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getBodyMetrics, getProfile, requireOnboarded } from "@/lib/dal";
+import { getCoachStatus } from "@/app/actions/coach";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SettingsForm } from "./settings-form";
 import { InstallButton } from "./install-button";
 import { NotificationsToggle } from "./notifications-toggle";
+import { CoachCard } from "./coach-card";
 
 export const metadata: Metadata = { title: "Ajustes · Vital360" };
 export const maxDuration = 60;
@@ -14,6 +16,7 @@ export const maxDuration = 60;
 export default async function AjustesPage() {
   const { goal } = await requireOnboarded();
   const profile = (await getProfile()) as any;
+  const coachStatus = await getCoachStatus();
   const metrics = await getBodyMetrics(60);
   const withWeight = [...metrics].reverse().find((m) => m.weight_kg != null);
   const weight = withWeight?.weight_kg ?? null;
@@ -52,6 +55,19 @@ export default async function AjustesPage() {
         }
         weight={weight}
       />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Tu nutricionista</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Conecta a tu nutricionista para que vea tu progreso y ajuste tus
+            metas a distancia.
+          </p>
+          <CoachCard initial={coachStatus} />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
