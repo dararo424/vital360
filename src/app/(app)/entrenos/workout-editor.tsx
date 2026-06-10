@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { Loader2, Plus, Search, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { createExercise, logWorkout, updateWorkout } from "@/app/actions/workouts";
+import { RestTimer } from "./rest-timer";
 import {
   EXERCISE_TYPES,
   EXERCISE_TYPE_LABELS,
@@ -305,6 +306,8 @@ export function WorkoutEditor({
       <Button type="button" variant="outline" size="lg" className="h-11 w-full" onClick={() => setPickerOpen(true)}>
         <Plus /> Agregar ejercicio
       </Button>
+
+      {blocks.length > 0 && <RestTimer />}
 
       <div className="space-y-1.5">
         <Label htmlFor="note">Nota (opcional)</Label>

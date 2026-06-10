@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
-import { Camera, LineChart } from "lucide-react";
-import { getBodyMetrics, getProgressPhotos, requireOnboarded } from "@/lib/dal";
+import { Camera, LineChart, TrendingUp } from "lucide-react";
+import {
+  detectStagnation,
+  getBodyMetrics,
+  getProgressPhotos,
+  requireOnboarded,
+} from "@/lib/dal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressForm } from "./progress-form";
 import { MetricsChart } from "./metrics-chart";
@@ -16,11 +21,41 @@ export default async function ProgresoPage() {
     getProgressPhotos(),
   ]);
   const history = [...metrics].reverse();
-  const adaptive = (profile as { adaptive?: boolean | null }).adaptive ?? false;
+  const p = profile as {
+    adaptive?: boolean | null;
+    objective?: string | null;
+    target_weight_kg?: number | null;
+  };
+  const adaptive = p.adaptive ?? false;
+  const stale = detectStagnation(metrics, p.objective ?? null, p.target_weight_kg ?? null);
 
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-semibold tracking-tight">Progreso</h1>
+
+      {stale && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+          <p className="flex items-center gap-2 text-sm font-medium">
+            <TrendingUp className="size-4 text-amber-600" /> Tu peso se estabilizó
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Llevas ~3 semanas casi sin cambios (Δ {stale.deltaKg > 0 ? "+" : ""}
+            {stale.deltaKg} kg).{" "}
+            {stale.direction === "loss" ? (
+              <>
+                Estancarse es normal. Sé constante con el registro, revisa porciones
+                y suma pasos/actividad. Si continúa, valida con tu nutricionista un
+                ajuste pequeño (~100–200 kcal). Sin déficits agresivos.
+              </>
+            ) : (
+              <>
+                Para seguir ganando músculo quizá necesites un poco más de energía y
+                proteína. Valida el ajuste con tu nutricionista.
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       <Card>
         <CardHeader>

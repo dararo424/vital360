@@ -322,6 +322,50 @@ export type Streak = {
   last7: { date: string; logged: boolean }[];
 };
 
+export type Stagnation = { weeks: number; deltaKg: number; direction: "loss" | "gain" };
+
+/**
+ * Detecta estancamiento del peso: compara el promedio de los últimos 7 días con
+ * el de hace ~3-4 semanas. Si la meta es bajar y no bajó (o subir y no subió),
+ * lo marca. Necesita ~3 semanas de datos. Función pura.
+ */
+export function detectStagnation(
+  metrics: BodyMetric[], // ascendente por measured_at
+  objective: string | null,
+  targetWeight: number | null
+): Stagnation | null {
+  const pts = metrics
+    .filter((m) => m.weight_kg != null)
+    .map((m) => ({ t: new Date(m.measured_at).getTime(), w: m.weight_kg as number }));
+  if (pts.length < 6) return null;
+
+  const now = pts[pts.length - 1].t;
+  const DAY = 86_400_000;
+  const avg = (fromDays: number, toDays: number) => {
+    const w = pts.filter((p) => p.t >= now - fromDays * DAY && p.t <= now - toDays * DAY);
+    return w.length ? w.reduce((a, p) => a + p.w, 0) / w.length : null;
+  };
+  const recent = avg(7, 0);
+  const past = avg(28, 21);
+  if (recent == null || past == null) return null;
+  const deltaKg = Math.round((recent - past) * 10) / 10;
+
+  let wantsLoss = false;
+  let wantsGain = false;
+  if (targetWeight != null) {
+    if (targetWeight < recent - 0.5) wantsLoss = true;
+    else if (targetWeight > recent + 0.5) wantsGain = true;
+  } else {
+    wantsLoss = objective === "lose_weight" || objective === "define" || objective === "recomp";
+    wantsGain = objective === "gain_muscle";
+  }
+
+  const STALL = 0.4; // kg en ~3 semanas
+  if (wantsLoss && deltaKg > -STALL) return { weeks: 3, deltaKg, direction: "loss" };
+  if (wantsGain && deltaKg < STALL) return { weeks: 3, deltaKg, direction: "gain" };
+  return null;
+}
+
 export type ProgressPhoto = {
   id: string;
   url: string | null;
