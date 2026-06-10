@@ -7,6 +7,7 @@ import {
   computeRecipeMacros,
   type BodyMetric,
   type DailyMacros,
+  type Food,
   type Macros,
   type NutritionGoal,
   type Profile,
@@ -195,6 +196,36 @@ export const getFoodLogs = cache(async (date: string): Promise<LoggedMeal[]> => 
     };
   });
   /* eslint-enable @typescript-eslint/no-explicit-any */
+});
+
+/** Alimentos usados recientemente por el usuario (para acceso rápido). */
+export const getRecentFoods = cache(async (limit = 8): Promise<Food[]> => {
+  const user = await getUser();
+  if (!user) return [];
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("food_logs")
+    .select("created_at,food_log_items(food_id,foods(*))")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(40);
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const seen = new Set<string>();
+  const out: Food[] = [];
+  for (const log of (data as any[]) ?? []) {
+    for (const it of log.food_log_items ?? []) {
+      const f = it.foods;
+      if (f && !seen.has(f.id)) {
+        seen.add(f.id);
+        out.push(f as Food);
+        if (out.length >= limit) return out;
+      }
+    }
+  }
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+  return out;
 });
 
 /** Consumo agregado de hoy (vista v_daily_macros), o null si no hay registros. */

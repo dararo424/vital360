@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/dal";
+import { searchOff, lookupBarcode } from "@/lib/openfoodfacts";
+import type { OffDraft } from "@/lib/types";
 import {
   foodSchema,
   logMealSchema,
@@ -55,6 +57,22 @@ export async function createFood(
   }
 
   return { ok: true, food: data as Food };
+}
+
+/** Busca alimentos en Open Food Facts (por texto). */
+export async function searchOffAction(query: string): Promise<OffDraft[]> {
+  const user = await getUser();
+  if (!user || query.trim().length < 2) return [];
+  return searchOff(query.trim());
+}
+
+/** Busca un producto por código de barras en Open Food Facts. */
+export async function lookupBarcodeAction(
+  code: string
+): Promise<OffDraft | null> {
+  const user = await getUser();
+  if (!user) return null;
+  return lookupBarcode(code);
 }
 
 /**

@@ -137,6 +137,19 @@ export type Macros = {
   fat_g: number;
 };
 
+/** Borrador de alimento desde Open Food Facts (macros por 100 g). */
+export type OffDraft = {
+  name: string;
+  brand: string;
+  serving_g: number;
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  fiber_g: number | null;
+  code: string;
+};
+
 export type Recipe = {
   id: string;
   user_id: string;

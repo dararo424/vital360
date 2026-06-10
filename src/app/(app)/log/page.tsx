@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Camera, Pencil } from "lucide-react";
-import { getActiveGoal, getTodayMacros, requireOnboarded } from "@/lib/dal";
+import {
+  getActiveGoal,
+  getRecentFoods,
+  getTodayMacros,
+  requireOnboarded,
+} from "@/lib/dal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ManualLog } from "./manual-log";
 import { PhotoLog } from "./photo-log";
@@ -9,7 +14,11 @@ export const metadata: Metadata = { title: "Registrar · Vital360" };
 
 export default async function LogPage() {
   await requireOnboarded();
-  const [goal, today] = await Promise.all([getActiveGoal(), getTodayMacros()]);
+  const [goal, today, recent] = await Promise.all([
+    getActiveGoal(),
+    getTodayMacros(),
+    getRecentFoods(8),
+  ]);
 
   const remaining = goal
     ? {
@@ -51,7 +60,7 @@ export default async function LogPage() {
           <PhotoLog />
         </TabsContent>
         <TabsContent value="manual" className="mt-4">
-          <ManualLog />
+          <ManualLog recent={recent} />
         </TabsContent>
       </Tabs>
     </div>
