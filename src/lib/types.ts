@@ -91,6 +91,7 @@ export type Food = {
   fat_g: number;
   serving_g: number; // gramos de la porción de referencia a la que aplican los macros
   fiber_g: number | null;
+  is_favorite?: boolean | null;
   created_at: string;
 };
 

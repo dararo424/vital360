@@ -97,6 +97,56 @@ export async function logWorkout(input: WorkoutInput): Promise<ActionState> {
   redirect("/entrenos");
 }
 
+/** Edita un entreno: actualiza la cabecera y reemplaza las series. */
+export async function updateWorkout(
+  id: string,
+  input: WorkoutInput
+): Promise<ActionState> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Sesión expirada." };
+
+  const parsed = workoutSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "Revisa los datos del entreno.",
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+    };
+  }
+  const d = parsed.data;
+  const supabase = await createClient();
+
+  const { error: wErr } = await supabase
+    .from("workouts")
+    .update({
+      title: d.title,
+      workout_date: d.workout_date,
+      duration_min: d.duration_min ?? null,
+      note: d.note || null,
+    })
+    .eq("id", id)
+    .eq("user_id", user.id);
+  if (wErr) return { ok: false, error: "No se pudo actualizar el entreno." };
+
+  await supabase.from("workout_sets").delete().eq("workout_id", id);
+  const { error: sErr } = await supabase.from("workout_sets").insert(
+    d.sets.map((s) => ({
+      workout_id: id,
+      exercise_id: s.exercise_id,
+      set_number: s.set_number,
+      reps: s.reps ?? null,
+      weight_kg: s.weight_kg ?? null,
+      duration_sec: s.duration_sec ?? null,
+      distance_m: s.distance_m ?? null,
+      rpe: s.rpe ?? null,
+    }))
+  );
+  if (sErr) return { ok: false, error: "No se pudieron guardar las series." };
+
+  revalidatePath("/entrenos");
+  redirect("/entrenos");
+}
+
 export async function deleteWorkout(id: string): Promise<void> {
   const user = await getUser();
   if (!user) return;

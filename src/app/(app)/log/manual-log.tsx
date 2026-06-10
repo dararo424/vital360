@@ -1,13 +1,14 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { Loader2, Search, Trash2, X } from "lucide-react";
+import { Loader2, Search, Star, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   createFood,
   logMeal,
   lookupBarcodeAction,
   searchOffAction,
+  setFoodFavorite,
 } from "@/app/actions/foods";
 import {
   MEAL_TYPES,
@@ -41,7 +42,14 @@ function defaultMeal(): MealType {
   return "snack";
 }
 
-export function ManualLog({ recent = [] }: { recent?: Food[] }) {
+export function ManualLog({
+  recent = [],
+  favorites = [],
+}: {
+  recent?: Food[];
+  favorites?: Food[];
+}) {
+  const [favs, setFavs] = useState<Food[]>(favorites);
   const [mealType, setMealType] = useState<MealType>(defaultMeal);
   const [logDate, setLogDate] = useState(localToday);
   const [note, setNote] = useState("");
@@ -128,6 +136,17 @@ export function ManualLog({ recent = [] }: { recent?: Food[] }) {
       }
       importOff(draft);
     });
+  }
+
+  function toggleFav(food: Food) {
+    const next = !food.is_favorite;
+    setResults((p) => p.map((r) => (r.id === food.id ? { ...r, is_favorite: next } : r)));
+    setFavs((p) =>
+      next
+        ? [...p.filter((x) => x.id !== food.id), { ...food, is_favorite: true }]
+        : p.filter((x) => x.id !== food.id)
+    );
+    setFoodFavorite(food.id, next);
   }
 
   function setQty(key: string, grams: number) {
@@ -232,6 +251,27 @@ export function ManualLog({ recent = [] }: { recent?: Food[] }) {
           )}
         </div>
 
+        {/* Favoritos (cuando no estás buscando) */}
+        {query.trim().length < 2 && favs.length > 0 && (
+          <div>
+            <p className="mb-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+              <Star className="size-3 fill-amber-400 text-amber-400" /> Favoritos
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {favs.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => addFood(f)}
+                  className="rounded-full border px-2.5 py-1 text-xs transition-colors hover:bg-muted"
+                >
+                  {f.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Recientes (cuando no estás buscando) */}
         {query.trim().length < 2 && recent.length > 0 && (
           <div>
@@ -259,11 +299,11 @@ export function ManualLog({ recent = [] }: { recent?: Food[] }) {
                 <CardContent className="p-1.5">
                   <ul className="max-h-52 overflow-auto">
                     {results.map((f) => (
-                      <li key={f.id}>
+                      <li key={f.id} className="flex items-center">
                         <button
                           type="button"
                           onClick={() => addFood(f)}
-                          className="flex w-full items-center justify-between rounded-md px-2.5 py-2 text-left text-sm hover:bg-muted"
+                          className="flex min-w-0 flex-1 items-center justify-between rounded-md px-2.5 py-2 text-left text-sm hover:bg-muted"
                         >
                           <span className="min-w-0 truncate">
                             {f.name}
@@ -272,6 +312,21 @@ export function ManualLog({ recent = [] }: { recent?: Food[] }) {
                           <span className="shrink-0 text-xs text-muted-foreground">
                             {f.kcal} kcal/{f.serving_g}g
                           </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => toggleFav(f)}
+                          aria-label="Favorito"
+                          className="shrink-0 px-1.5 py-2"
+                        >
+                          <Star
+                            className={cn(
+                              "size-4",
+                              f.is_favorite
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-muted-foreground"
+                            )}
+                          />
                         </button>
                       </li>
                     ))}

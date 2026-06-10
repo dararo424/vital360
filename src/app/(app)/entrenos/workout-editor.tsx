@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { Loader2, Plus, Search, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { createExercise, logWorkout } from "@/app/actions/workouts";
+import { createExercise, logWorkout, updateWorkout } from "@/app/actions/workouts";
 import {
   EXERCISE_TYPES,
   EXERCISE_TYPE_LABELS,
@@ -51,21 +51,59 @@ export type WorkoutPrefill = {
   blocks: { exercise_id: string; name: string; type: ExerciseType; sets: number }[];
 };
 
-export function WorkoutEditor({ prefill }: { prefill?: WorkoutPrefill }) {
-  const [title, setTitle] = useState(prefill?.title ?? "");
-  const [date, setDate] = useState(localToday);
-  const [duration, setDuration] = useState("");
-  const [note, setNote] = useState("");
+export type WorkoutEditInitial = {
+  title: string;
+  workout_date: string;
+  duration_min: number | null;
+  note: string | null;
+  blocks: {
+    exercise_id: string;
+    name: string;
+    type: string;
+    rows: { a: string; b: string; rpe: string }[];
+  }[];
+};
+
+export function WorkoutEditor({
+  prefill,
+  editId,
+  initial,
+}: {
+  prefill?: WorkoutPrefill;
+  editId?: string;
+  initial?: WorkoutEditInitial;
+}) {
+  const [title, setTitle] = useState(initial?.title ?? prefill?.title ?? "");
+  const [date, setDate] = useState(
+    initial?.workout_date ? initial.workout_date.slice(0, 10) : localToday()
+  );
+  const [duration, setDuration] = useState(
+    initial?.duration_min != null ? String(initial.duration_min) : ""
+  );
+  const [note, setNote] = useState(initial?.note ?? "");
   const [blocks, setBlocks] = useState<Block[]>(
-    prefill
-      ? prefill.blocks.map((b) => ({
+    initial
+      ? initial.blocks.map((b) => ({
           key: k(),
           exercise_id: b.exercise_id,
           name: b.name,
-          type: b.type,
-          rows: Array.from({ length: Math.max(1, b.sets) }, () => emptyRow()),
+          type: b.type as ExerciseType,
+          rows: (b.rows.length ? b.rows : [{ a: "", b: "", rpe: "" }]).map((r) => ({
+            key: k(),
+            a: r.a,
+            b: r.b,
+            rpe: r.rpe,
+          })),
         }))
-      : []
+      : prefill
+        ? prefill.blocks.map((b) => ({
+            key: k(),
+            exercise_id: b.exercise_id,
+            name: b.name,
+            type: b.type,
+            rows: Array.from({ length: Math.max(1, b.sets) }, () => emptyRow()),
+          }))
+        : []
   );
   const [pickerOpen, setPickerOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -131,14 +169,17 @@ export function WorkoutEditor({ prefill }: { prefill?: WorkoutPrefill }) {
     if (sets.length === 0)
       return setError("Agrega al menos una serie con datos.");
 
+    const payload = {
+      title,
+      workout_date: date,
+      duration_min: duration ? Number(duration) : undefined,
+      note,
+      sets,
+    };
     startSave(async () => {
-      const res = await logWorkout({
-        title,
-        workout_date: date,
-        duration_min: duration ? Number(duration) : undefined,
-        note,
-        sets,
-      });
+      const res = editId
+        ? await updateWorkout(editId, payload)
+        : await logWorkout(payload);
       if (res && !res.ok) setError(res.error);
     });
   }

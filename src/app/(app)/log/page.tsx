@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Camera, Pencil } from "lucide-react";
 import {
   getActiveGoal,
+  getFavoriteFoods,
   getRecentFoods,
   getTodayMacros,
   requireOnboarded,
@@ -14,10 +15,11 @@ export const metadata: Metadata = { title: "Registrar · Vital360" };
 
 export default async function LogPage() {
   await requireOnboarded();
-  const [goal, today, recent] = await Promise.all([
+  const [goal, today, recent, favorites] = await Promise.all([
     getActiveGoal(),
     getTodayMacros(),
     getRecentFoods(8),
+    getFavoriteFoods(12),
   ]);
 
   const remaining = goal
@@ -60,7 +62,7 @@ export default async function LogPage() {
           <PhotoLog />
         </TabsContent>
         <TabsContent value="manual" className="mt-4">
-          <ManualLog recent={recent} />
+          <ManualLog recent={recent} favorites={favorites} />
         </TabsContent>
       </Tabs>
     </div>

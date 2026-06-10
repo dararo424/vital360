@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Dumbbell, Plus, Trophy } from "lucide-react";
+import { Dumbbell, Plus, SquarePen, Trophy } from "lucide-react";
 import {
   computeRecords,
   getWorkouts,
@@ -113,7 +113,14 @@ export default async function EntrenosPage() {
                         {w.duration_min ? ` · ${w.duration_min} min` : ""}
                       </p>
                     </div>
-                    <DeleteWorkoutButton id={w.id} />
+                    <div className="flex items-center">
+                      <Button asChild variant="ghost" size="icon-sm" aria-label="Editar entreno">
+                        <Link href={`/entrenos/${w.id}/editar`}>
+                          <SquarePen className="size-4 text-muted-foreground" />
+                        </Link>
+                      </Button>
+                      <DeleteWorkoutButton id={w.id} />
+                    </div>
                   </div>
                   <ul className="mt-2 space-y-1 text-sm">
                     {summarize(w).map((g) => (

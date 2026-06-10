@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getUser } from "@/lib/dal";
+import { getUser, today } from "@/lib/dal";
 import { searchOff, lookupBarcode } from "@/lib/openfoodfacts";
 import type { OffDraft } from "@/lib/types";
 import {
@@ -59,6 +59,24 @@ export async function createFood(
   }
 
   return { ok: true, food: data as Food };
+}
+
+/** Marca/desmarca un alimento del catálogo como favorito. */
+export async function setFoodFavorite(
+  foodId: string,
+  value: boolean
+): Promise<{ ok: boolean }> {
+  const user = await getUser();
+  if (!user) return { ok: false };
+  const supabase = await createClient();
+  // RLS solo permite actualizar alimentos propios.
+  const { error } = await supabase
+    .from("foods")
+    .update({ is_favorite: value })
+    .eq("id", foodId)
+    .eq("user_id", user.id);
+  revalidatePath("/log");
+  return { ok: !error };
 }
 
 /** Busca alimentos en Open Food Facts (por texto). */
@@ -202,6 +220,62 @@ export async function updateFoodLog(
   revalidatePath("/diario");
   revalidatePath("/dashboard");
   redirect(`/diario?date=${d.log_date}`);
+}
+
+/** Repite una comida registrada: la vuelve a registrar hoy con los mismos ítems. */
+export async function repeatFoodLog(id: string): Promise<ActionState> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Sesión expirada." };
+  const supabase = await createClient();
+
+  const { data: log } = await supabase
+    .from("food_logs")
+    .select(
+      "meal_type,note,food_log_items(food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g,ai_confidence)"
+    )
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!log) return { ok: false, error: "Comida no encontrada." };
+
+  const items = (log as { food_log_items?: unknown[] }).food_log_items ?? [];
+  if (items.length === 0) return { ok: false, error: "Esta comida no tiene alimentos." };
+
+  const date = today();
+  const { data: newLog, error: lErr } = await supabase
+    .from("food_logs")
+    .insert({
+      user_id: user.id,
+      meal_type: (log as { meal_type: string }).meal_type,
+      log_date: date,
+      source: "manual",
+      note: (log as { note: string | null }).note,
+    })
+    .select("id")
+    .single();
+  if (lErr || !newLog) return { ok: false, error: "No se pudo repetir la comida." };
+
+  const { error: iErr } = await supabase.from("food_log_items").insert(
+    (items as Record<string, unknown>[]).map((it) => ({
+      food_log_id: newLog.id,
+      food_id: it.food_id,
+      name: it.name,
+      quantity_g: it.quantity_g,
+      kcal: it.kcal,
+      protein_g: it.protein_g,
+      carbs_g: it.carbs_g,
+      fat_g: it.fat_g,
+      ai_confidence: it.ai_confidence ?? null,
+    }))
+  );
+  if (iErr) {
+    await supabase.from("food_logs").delete().eq("id", newLog.id);
+    return { ok: false, error: "No se pudieron copiar los alimentos." };
+  }
+
+  revalidatePath("/diario");
+  revalidatePath("/dashboard");
+  redirect(`/diario?date=${date}`);
 }
 
 /** Borra una comida registrada (food_log + sus items). */

@@ -208,6 +208,21 @@ export const getFoodLogs = cache(async (date: string): Promise<LoggedMeal[]> => 
   /* eslint-enable @typescript-eslint/no-explicit-any */
 });
 
+/** Alimentos favoritos del usuario. */
+export const getFavoriteFoods = cache(async (limit = 12): Promise<Food[]> => {
+  const user = await getUser();
+  if (!user) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("foods")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("is_favorite", true)
+    .order("name")
+    .limit(limit);
+  return (data as Food[]) ?? [];
+});
+
 /** Alimentos usados recientemente por el usuario (para acceso rápido). */
 export const getRecentFoods = cache(async (limit = 8): Promise<Food[]> => {
   const user = await getUser();
@@ -462,6 +477,82 @@ export const getWorkouts = cache(async (): Promise<WorkoutWithSets[]> => {
     .limit(100);
 
   return ((data as unknown[]) ?? []).map(mapWorkout);
+});
+
+export type WorkoutEditData = {
+  id: string;
+  title: string;
+  workout_date: string;
+  duration_min: number | null;
+  note: string | null;
+  blocks: {
+    exercise_id: string;
+    name: string;
+    type: string;
+    rows: { a: string; b: string; rpe: string }[];
+  }[];
+};
+
+/** Un entreno por id, en formato editable (bloques de ejercicio con filas). */
+export const getWorkout = cache(async (id: string): Promise<WorkoutEditData | null> => {
+  const user = await getUser();
+  if (!user) return null;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("workouts")
+    .select(
+      "id,title,workout_date,duration_min,note,workout_sets(exercise_id,set_number,reps,weight_kg,duration_sec,distance_m,rpe,exercises(name,type))"
+    )
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!data) return null;
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const d = data as any;
+  const order: string[] = [];
+  const byEx = new Map<string, any[]>();
+  for (const s of (d.workout_sets ?? []).slice().sort((a: any, b: any) => a.set_number - b.set_number)) {
+    if (!byEx.has(s.exercise_id)) {
+      byEx.set(s.exercise_id, []);
+      order.push(s.exercise_id);
+    }
+    byEx.get(s.exercise_id)!.push(s);
+  }
+  const blocks = order.map((exId) => {
+    const sets = byEx.get(exId)!;
+    const ex = sets[0].exercises;
+    const type = ex?.type ?? "fuerza";
+    return {
+      exercise_id: exId,
+      name: ex?.name ?? "Ejercicio",
+      type,
+      rows: sets.map((s) =>
+        type === "cardio"
+          ? {
+              a: s.duration_sec != null ? String(Math.round(s.duration_sec / 60)) : "",
+              b: s.distance_m != null ? String(s.distance_m / 1000) : "",
+              rpe: s.rpe != null ? String(s.rpe) : "",
+            }
+          : {
+              a: s.reps != null ? String(s.reps) : "",
+              b: s.weight_kg != null ? String(s.weight_kg) : "",
+              rpe: s.rpe != null ? String(s.rpe) : "",
+            }
+      ),
+    };
+  });
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+
+  return {
+    id: d.id,
+    title: d.title,
+    workout_date: d.workout_date,
+    duration_min: d.duration_min,
+    note: d.note,
+    blocks,
+  };
 });
 
 /** Récords por ejercicio calculados desde el historial. */
