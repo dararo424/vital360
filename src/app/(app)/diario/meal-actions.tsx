@@ -23,9 +23,9 @@ export function SaveAsRecipeButton({ items }: { items: RecipeItem[] }) {
     <div>
       <Button
         type="button"
-        variant="ghost"
+        variant="outline"
         size="sm"
-        className="h-8 text-xs text-muted-foreground"
+        className="h-8 w-full border-primary/40 text-primary"
         disabled={pending}
         onClick={() => {
           setErr(null);
