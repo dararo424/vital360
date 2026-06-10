@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   CalendarRange,
   Dumbbell,
+  Flame,
   LogOut,
   Settings,
   ShoppingCart,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 import {
   getBodyMetrics,
+  getLoggingStreak,
   getMacrosRange,
   getTodayMacros,
   requireOnboarded,
@@ -42,10 +44,11 @@ function buildTrend(
 
 export default async function DashboardPage() {
   const { profile, goal } = await requireOnboarded();
-  const [todayMacros, range, metrics] = await Promise.all([
+  const [todayMacros, range, metrics, streak] = await Promise.all([
     getTodayMacros(),
     getMacrosRange(30),
     getBodyMetrics(60),
+    getLoggingStreak(),
   ]);
 
   const firstName = profile.full_name?.split(" ")[0] ?? "Hola";
@@ -100,6 +103,38 @@ export default async function DashboardPage() {
           </form>
         </div>
       </header>
+
+      {/* Racha */}
+      <Card>
+        <CardContent className="flex items-center justify-between py-3">
+          <div className="flex items-center gap-2.5">
+            <Flame
+              className={`size-6 ${streak.current > 0 ? "text-orange-500" : "text-muted-foreground"}`}
+            />
+            <div>
+              <p className="text-sm font-semibold leading-tight">
+                {streak.current > 0
+                  ? `${streak.current} día${streak.current === 1 ? "" : "s"} seguidos`
+                  : "Empieza tu racha"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {streak.loggedToday
+                  ? "¡Registrado hoy! 🎉"
+                  : "Registra algo hoy para sumar 🔥"}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-1">
+            {streak.last7.map((d) => (
+              <span
+                key={d.date}
+                title={d.date}
+                className={`size-2.5 rounded-full ${d.logged ? "bg-primary" : "bg-muted"}`}
+              />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Anillos del día */}
       <Card>

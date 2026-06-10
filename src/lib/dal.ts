@@ -282,6 +282,55 @@ export const getFoodLog = cache(async (id: string): Promise<FoodLogFull | null> 
   /* eslint-enable @typescript-eslint/no-explicit-any */
 });
 
+export type Streak = {
+  current: number;
+  loggedToday: boolean;
+  last7: { date: string; logged: boolean }[];
+};
+
+/** Racha de días consecutivos registrando comida + últimos 7 días. */
+export const getLoggingStreak = cache(async (): Promise<Streak> => {
+  const user = await getUser();
+  if (!user) return { current: 0, loggedToday: false, last7: [] };
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("food_logs")
+    .select("log_date")
+    .eq("user_id", user.id)
+    .gte("log_date", daysAgo(180))
+    .order("log_date", { ascending: false });
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const set = new Set(
+    ((data as any[]) ?? []).map((r) => String(r.log_date).slice(0, 10))
+  );
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+  const fmt = (d: Date) => d.toISOString().slice(0, 10);
+  const todayStr = today();
+  const loggedToday = set.has(todayStr);
+
+  // La racha sigue viva durante hoy aunque aún no registres → cuenta desde ayer.
+  let current = 0;
+  const d = new Date(todayStr + "T00:00:00Z");
+  if (!loggedToday) d.setUTCDate(d.getUTCDate() - 1);
+  while (set.has(fmt(d))) {
+    current++;
+    d.setUTCDate(d.getUTCDate() - 1);
+  }
+
+  const last7: { date: string; logged: boolean }[] = [];
+  const c = new Date(todayStr + "T00:00:00Z");
+  for (let i = 6; i >= 0; i--) {
+    const dd = new Date(c);
+    dd.setUTCDate(c.getUTCDate() - i);
+    const ds = fmt(dd);
+    last7.push({ date: ds, logged: set.has(ds) });
+  }
+
+  return { current, loggedToday, last7 };
+});
+
 /** Consumo agregado de hoy (vista v_daily_macros), o null si no hay registros. */
 export const getTodayMacros = cache(async (): Promise<DailyMacros | null> => {
   const user = await getUser();
