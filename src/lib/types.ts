@@ -379,6 +379,7 @@ export const logItemSchema = z.object({
   protein_g: z.coerce.number().min(0),
   carbs_g: z.coerce.number().min(0),
   fat_g: z.coerce.number().min(0),
+  fiber_g: z.coerce.number().min(0).nullable().optional(),
   ai_confidence: z.coerce.number().min(0).max(1).nullable().optional(),
 });
 
@@ -403,6 +404,7 @@ export const analyzedItemSchema = z.object({
   protein_g: z.coerce.number().min(0),
   carbs_g: z.coerce.number().min(0),
   fat_g: z.coerce.number().min(0),
+  fiber_g: z.coerce.number().min(0).default(0),
   confidence: z.coerce.number().min(0).max(1),
 });
 export const analyzeResultSchema = z.object({

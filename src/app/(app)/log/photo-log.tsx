@@ -24,7 +24,8 @@ type EditItem = {
   carbs_g: number;
   fat_g: number;
   confidence: number;
-  perGram: { kcal: number; p: number; c: number; f: number };
+  fiber_g: number;
+  perGram: { kcal: number; p: number; c: number; f: number; fiber: number };
 };
 
 function localToday(): string {
@@ -82,8 +83,15 @@ function toEditItem(a: AnalyzedItem, i: number): EditItem {
     protein_g: round1(a.protein_g),
     carbs_g: round1(a.carbs_g),
     fat_g: round1(a.fat_g),
+    fiber_g: round1(a.fiber_g ?? 0),
     confidence: a.confidence,
-    perGram: { kcal: a.kcal / g, p: a.protein_g / g, c: a.carbs_g / g, f: a.fat_g / g },
+    perGram: {
+      kcal: a.kcal / g,
+      p: a.protein_g / g,
+      c: a.carbs_g / g,
+      f: a.fat_g / g,
+      fiber: (a.fiber_g ?? 0) / g,
+    },
   };
 }
 
@@ -152,6 +160,7 @@ export function PhotoLog() {
               protein_g: round1(it.perGram.p * grams),
               carbs_g: round1(it.perGram.c * grams),
               fat_g: round1(it.perGram.f * grams),
+              fiber_g: round1(it.perGram.fiber * grams),
             }
           : it
       )
@@ -203,6 +212,7 @@ export function PhotoLog() {
           protein_g: it.protein_g,
           carbs_g: it.carbs_g,
           fat_g: it.fat_g,
+          fiber_g: it.fiber_g,
           ai_confidence: it.confidence,
         })),
       });

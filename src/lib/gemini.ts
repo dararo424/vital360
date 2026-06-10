@@ -13,7 +13,7 @@ const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const PROMPT = `Eres un asistente de nutrición. Identifica cada alimento visible en la foto.
 Para cada alimento estima su cantidad en gramos y sus macros.
 Responde SOLO con JSON (sin markdown) con este formato exacto:
-{ "items": [ { "name": string, "estimated_grams": number, "kcal": number, "protein_g": number, "carbs_g": number, "fat_g": number, "confidence": number } ] }
+{ "items": [ { "name": string, "estimated_grams": number, "kcal": number, "protein_g": number, "carbs_g": number, "fat_g": number, "fiber_g": number, "confidence": number } ] }
 Reglas:
 - "name" en español, conciso (ej. "Arroz blanco", "Pechuga de pollo a la plancha").
 - Las cantidades y macros son ESTIMACIONES. Si no estás seguro, baja el "confidence".
@@ -34,6 +34,7 @@ const responseSchema = {
           protein_g: { type: SchemaType.NUMBER },
           carbs_g: { type: SchemaType.NUMBER },
           fat_g: { type: SchemaType.NUMBER },
+          fiber_g: { type: SchemaType.NUMBER },
           confidence: { type: SchemaType.NUMBER },
         },
         required: [
@@ -43,6 +44,7 @@ const responseSchema = {
           "protein_g",
           "carbs_g",
           "fat_g",
+          "fiber_g",
           "confidence",
         ],
       },

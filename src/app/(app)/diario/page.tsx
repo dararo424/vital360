@@ -45,6 +45,7 @@ export default async function DiarioPage({
     }),
     { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }
   );
+  const dayFiber = meals.reduce((a, m) => a + m.fiber, 0);
 
   return (
     <div className="space-y-4">
@@ -74,6 +75,7 @@ export default async function DiarioPage({
               P {Math.round(dayTotal.protein_g)}/{goal.protein_g} · C{" "}
               {Math.round(dayTotal.carbs_g)}/{goal.carbs_g} · G{" "}
               {Math.round(dayTotal.fat_g)}/{goal.fat_g} g
+              {dayFiber > 0 && <> · Fibra {Math.round(dayFiber)} g</>}
             </p>
           </CardContent>
         </Card>

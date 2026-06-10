@@ -22,7 +22,7 @@ type EditItem = {
   food_id: string | null;
   name: string;
   quantity_g: number;
-  perGram: { k: number; p: number; c: number; f: number };
+  perGram: { k: number; p: number; c: number; f: number; fiber: number };
   ai_confidence: number | null;
 };
 
@@ -36,7 +36,13 @@ function fromItem(it: FoodLogFull["items"][number]): EditItem {
     food_id: it.food_id,
     name: it.name,
     quantity_g: it.quantity_g,
-    perGram: { k: it.kcal / g, p: it.protein_g / g, c: it.carbs_g / g, f: it.fat_g / g },
+    perGram: {
+      k: it.kcal / g,
+      p: it.protein_g / g,
+      c: it.carbs_g / g,
+      f: it.fat_g / g,
+      fiber: (it.fiber_g ?? 0) / g,
+    },
     ai_confidence: it.ai_confidence,
   };
 }
@@ -47,7 +53,13 @@ function fromFood(food: Food): EditItem {
     food_id: food.id,
     name: food.name,
     quantity_g: food.serving_g,
-    perGram: { k: food.kcal / s, p: food.protein_g / s, c: food.carbs_g / s, f: food.fat_g / s },
+    perGram: {
+      k: food.kcal / s,
+      p: food.protein_g / s,
+      c: food.carbs_g / s,
+      f: food.fat_g / s,
+      fiber: (food.fiber_g ?? 0) / s,
+    },
     ai_confidence: null,
   };
 }
@@ -57,6 +69,7 @@ function macros(it: EditItem) {
     protein_g: round1(it.perGram.p * it.quantity_g),
     carbs_g: round1(it.perGram.c * it.quantity_g),
     fat_g: round1(it.perGram.f * it.quantity_g),
+    fiber_g: round1(it.perGram.fiber * it.quantity_g),
   };
 }
 

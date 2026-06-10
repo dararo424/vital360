@@ -144,6 +144,7 @@ export async function logMeal(input: LogMealInput): Promise<ActionState> {
       protein_g: it.protein_g,
       carbs_g: it.carbs_g,
       fat_g: it.fat_g,
+      fiber_g: it.fiber_g ?? null,
       ai_confidence: it.ai_confidence ?? null,
     }))
   );
@@ -212,6 +213,7 @@ export async function updateFoodLog(
       protein_g: it.protein_g,
       carbs_g: it.carbs_g,
       fat_g: it.fat_g,
+      fiber_g: it.fiber_g ?? null,
       ai_confidence: it.ai_confidence ?? null,
     }))
   );
@@ -231,7 +233,7 @@ export async function repeatFoodLog(id: string): Promise<ActionState> {
   const { data: log } = await supabase
     .from("food_logs")
     .select(
-      "meal_type,note,food_log_items(food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g,ai_confidence)"
+      "meal_type,note,food_log_items(food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g,fiber_g,ai_confidence)"
     )
     .eq("id", id)
     .eq("user_id", user.id)
@@ -265,6 +267,7 @@ export async function repeatFoodLog(id: string): Promise<ActionState> {
       protein_g: it.protein_g,
       carbs_g: it.carbs_g,
       fat_g: it.fat_g,
+      fiber_g: it.fiber_g ?? null,
       ai_confidence: it.ai_confidence ?? null,
     }))
   );

@@ -158,8 +158,10 @@ export type LoggedMeal = {
     protein_g: number;
     carbs_g: number;
     fat_g: number;
+    fiber_g: number | null;
   }[];
   totals: Macros;
+  fiber: number;
 };
 
 /** Comidas registradas en una fecha (food_logs + sus items), por meal_type. */
@@ -171,7 +173,7 @@ export const getFoodLogs = cache(async (date: string): Promise<LoggedMeal[]> => 
   const { data } = await supabase
     .from("food_logs")
     .select(
-      "id,meal_type,source,note,created_at,food_log_items(id,food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g)"
+      "id,meal_type,source,note,created_at,food_log_items(id,food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g,fiber_g)"
     )
     .eq("user_id", user.id)
     .eq("log_date", date)
@@ -188,6 +190,7 @@ export const getFoodLogs = cache(async (date: string): Promise<LoggedMeal[]> => 
       protein_g: it.protein_g,
       carbs_g: it.carbs_g,
       fat_g: it.fat_g,
+      fiber_g: it.fiber_g,
     }));
     const totals = items.reduce(
       (a: Macros, it: any) => ({
@@ -198,6 +201,7 @@ export const getFoodLogs = cache(async (date: string): Promise<LoggedMeal[]> => 
       }),
       { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }
     );
+    const fiber = items.reduce((a: number, it: any) => a + (it.fiber_g ?? 0), 0);
     return {
       id: log.id,
       meal_type: log.meal_type,
@@ -205,6 +209,7 @@ export const getFoodLogs = cache(async (date: string): Promise<LoggedMeal[]> => 
       note: log.note,
       items,
       totals,
+      fiber,
     };
   });
   /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -268,6 +273,7 @@ export type FoodLogFull = {
     protein_g: number;
     carbs_g: number;
     fat_g: number;
+    fiber_g: number | null;
     ai_confidence: number | null;
   }[];
 };
@@ -281,7 +287,7 @@ export const getFoodLog = cache(async (id: string): Promise<FoodLogFull | null> 
   const { data } = await supabase
     .from("food_logs")
     .select(
-      "id,meal_type,log_date,note,food_log_items(food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g,ai_confidence)"
+      "id,meal_type,log_date,note,food_log_items(food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g,fiber_g,ai_confidence)"
     )
     .eq("id", id)
     .eq("user_id", user.id)
@@ -303,6 +309,7 @@ export const getFoodLog = cache(async (id: string): Promise<FoodLogFull | null> 
       protein_g: it.protein_g,
       carbs_g: it.carbs_g,
       fat_g: it.fat_g,
+      fiber_g: it.fiber_g,
       ai_confidence: it.ai_confidence,
     })),
   };

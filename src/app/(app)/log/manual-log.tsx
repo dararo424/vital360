@@ -13,6 +13,7 @@ import {
 import {
   MEAL_TYPES,
   MEAL_TYPE_LABELS,
+  round1,
   scaleFood,
   type Food,
   type MealType,
@@ -186,10 +187,12 @@ export function ManualLog({
       source: "manual" as const,
       items: items.map((it) => {
         const m = scaleFood(it.food, it.quantity_g);
+        const f = it.food.serving_g > 0 ? it.quantity_g / it.food.serving_g : 0;
         return {
           food_id: it.food.id,
           name: it.food.name,
           quantity_g: it.quantity_g,
+          fiber_g: it.food.fiber_g != null ? round1(it.food.fiber_g * f) : null,
           ...m,
         };
       }),
