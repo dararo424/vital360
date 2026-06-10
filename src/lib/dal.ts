@@ -151,6 +151,7 @@ export type LoggedMeal = {
   note: string | null;
   items: {
     id: string;
+    food_id: string | null;
     name: string;
     quantity_g: number;
     kcal: number;
@@ -170,7 +171,7 @@ export const getFoodLogs = cache(async (date: string): Promise<LoggedMeal[]> => 
   const { data } = await supabase
     .from("food_logs")
     .select(
-      "id,meal_type,source,note,created_at,food_log_items(id,name,quantity_g,kcal,protein_g,carbs_g,fat_g)"
+      "id,meal_type,source,note,created_at,food_log_items(id,food_id,name,quantity_g,kcal,protein_g,carbs_g,fat_g)"
     )
     .eq("user_id", user.id)
     .eq("log_date", date)
@@ -180,6 +181,7 @@ export const getFoodLogs = cache(async (date: string): Promise<LoggedMeal[]> => 
   return ((data as any[]) ?? []).map((log) => {
     const items = (log.food_log_items ?? []).map((it: any) => ({
       id: it.id,
+      food_id: it.food_id,
       name: it.name,
       quantity_g: it.quantity_g,
       kcal: it.kcal,

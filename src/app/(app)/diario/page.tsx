@@ -11,7 +11,11 @@ import { MEAL_TYPE_LABELS, type MealType } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DateNav } from "./date-nav";
-import { DeleteMealButton, RepeatMealButton } from "./meal-actions";
+import {
+  DeleteMealButton,
+  RepeatMealButton,
+  SaveAsRecipeButton,
+} from "./meal-actions";
 
 export const metadata: Metadata = { title: "Diario · Vital360" };
 
@@ -129,6 +133,9 @@ export default async function DiarioPage({
                   {m.note && (
                     <p className="mt-1.5 text-xs italic text-muted-foreground">{m.note}</p>
                   )}
+                  <div className="mt-1">
+                    <SaveAsRecipeButton items={m.items} />
+                  </div>
                 </CardContent>
               </Card>
             </li>
