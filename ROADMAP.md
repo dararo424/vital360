@@ -42,12 +42,23 @@ coma en el peso** (es-CO).
 1. ✅ ~~Soporte offline (básico)~~ — el SW cachea el shell y los assets, abre sin conexión con pantalla `/offline` y sirve lo último visto. (Pendiente avanzado: registrar comidas offline y sincronizar.)
 2. ✅ ~~Salvaguardas de TCA + privacidad/términos~~ — página /legal, consentimiento al registrarse, banners de apoyo ante metas extremas (onboarding y ajustes).
 3. ✅ ~~Skeletons de carga + feedback de navegación~~ — esqueleto al cambiar de pantalla + spinner en el ítem del nav. (Pendiente: reintentos automáticos cuando la IA falla.)
-4. **Decimales con coma en TODOS los campos** (hoy solo peso/medidas; faltaría macros, gramos, etc.).
-5. **Coach nutricional IA** ✅ — análisis semanal de alimentos vs metas con consejos accionables.
+4. ✅ ~~Decimales con coma en todos los campos relevantes~~ — componente `DecimalInput` (peso/reps/RPE, macros, metas, etc.).
+5. ✅ ~~Coach nutricional IA~~ — análisis semanal de alimentos vs metas con consejos accionables.
+6. **Offline avanzado** — registrar comidas/pesos sin conexión y sincronizar al reconectar (cola en IndexedDB + resolución de conflictos). Hoy hay offline básico (shell + última vista).
 
-### 📲 Integración con salud del dispositivo
-5. **Apple Health (iOS) + Health Connect / Google Fit (Android)** — leer peso, pasos, calorías quemadas, frecuencia cardiaca; escribir lo que registras.
-   > ⚠️ Una PWA no puede acceder directamente a Apple Health/Health Connect. Requiere **envolver la app en un contenedor nativo** (ej. Capacitor) y publicar en las tiendas. Es el ítem más grande del roadmap.
+### 📲 Integración con salud del dispositivo (DIFERIDO — decisión: retomar al ir a tiendas)
+7. **Apple Health (iOS) + Health Connect (Android)** — leer peso, pasos, calorías quemadas, frecuencia cardiaca; y escribir lo que registras.
+
+   **Por qué no se puede en la PWA:** Apple Health (HealthKit) **no tiene API web** y Health Connect es **API nativa de Android**. (Google Fit REST se apaga en 2026.) Solo se accede desde apps **nativas**.
+
+   **Plan técnico (cuando se decida publicar en tiendas):**
+   1. Envolver la web ya desplegada en **Capacitor** (webview apuntando a la URL de Vercel → mantiene SSR/server actions/auth tal cual).
+   2. Agregar un plugin de salud (ej. `@capacitor-community/health` o `capacitor-health`) para leer/escribir peso, pasos y energía.
+   3. Módulo de sincronización: al abrir, leer peso/pasos del día y volcarlos a `body_metrics` (y opcionalmente escribir lo registrado en la app hacia Health).
+   4. Compilar: **iOS** necesita un **Mac** o CI (EAS/Codemagic) + **Apple Developer (US$99/año)** + entitlement de HealthKit + textos de privacidad. **Android**: **Google Play (US$25)** + declaración de permisos de Health Connect.
+   5. Pasar **revisión de tiendas** (apps de salud tienen escrutinio extra).
+
+   **Costo aprox.:** ~US$99/año (Apple) + US$25 (Google) + tiempo de build/publicación. Requiere Mac/CI y cuentas de desarrollador.
 
 ---
 
