@@ -59,6 +59,11 @@ export function LoginForm() {
           Crea una
         </Link>
       </p>
+      <p className="text-center text-xs text-muted-foreground">
+        <Link href="/legal" className="hover:underline">
+          Términos y privacidad
+        </Link>
+      </p>
     </form>
   );
 }

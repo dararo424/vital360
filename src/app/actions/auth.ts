@@ -45,6 +45,15 @@ export async function signup(
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  // Consentimiento explícito (datos de salud).
+  if (formData.get("accept") !== "on") {
+    return {
+      ok: false,
+      error: "Debes aceptar los términos y la política de privacidad.",
+      fieldErrors: { accept: ["Debes aceptar para crear la cuenta."] },
+    };
+  }
+
   const parsed = signupSchema.safeParse({
     full_name: formData.get("full_name"),
     email: formData.get("email"),

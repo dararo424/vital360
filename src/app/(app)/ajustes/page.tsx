@@ -94,6 +94,12 @@ export default async function AjustesPage() {
           <NotificationsToggle />
         </CardContent>
       </Card>
+
+      <p className="pt-2 text-center text-xs text-muted-foreground">
+        <Link href="/legal" className="hover:underline">
+          Términos y política de privacidad
+        </Link>
+      </p>
     </div>
   );
 }

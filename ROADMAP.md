@@ -39,8 +39,8 @@ coma en el peso** (es-CO).
 ## 📌 Pendiente
 
 ### 🟢 Pulido / robustez
-1. **Modo offline real** (el service worker hoy solo hace push; falta cachear la app).
-2. **Salvaguardas de TCA** (mensajes de apoyo ante metas extremas) + **privacidad/términos** (datos de salud).
+1. **Modo offline real** (el service worker hoy solo hace push; falta cachear la app). ← siguiente
+2. ✅ ~~Salvaguardas de TCA + privacidad/términos~~ — página /legal, consentimiento al registrarse, banners de apoyo ante metas extremas (onboarding y ajustes).
 3. **Skeletons de carga** y reintentos automáticos cuando la IA falla.
 4. **Decimales con coma en TODOS los campos** (hoy solo peso/medidas; faltaría macros, gramos, etc.).
 

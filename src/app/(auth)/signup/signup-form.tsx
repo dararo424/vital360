@@ -79,6 +79,27 @@ export function SignupForm() {
         )}
       </div>
 
+      <div className="space-y-1">
+        <label htmlFor="accept" className="flex items-start gap-2 text-xs leading-snug text-muted-foreground">
+          <input
+            id="accept"
+            name="accept"
+            type="checkbox"
+            className="mt-0.5 size-4 shrink-0 rounded border-input accent-primary"
+          />
+          <span>
+            Acepto los{" "}
+            <Link href="/legal" target="_blank" className="text-primary hover:underline">
+              términos y la política de privacidad
+            </Link>
+            , incluido el tratamiento de mis datos de salud.
+          </span>
+        </label>
+        {state && !state.ok && state.fieldErrors?.accept && (
+          <p className="text-sm text-destructive">{state.fieldErrors.accept[0]}</p>
+        )}
+      </div>
+
       {state && !state.ok && !state.fieldErrors && (
         <p className="text-sm text-destructive">{state.error}</p>
       )}

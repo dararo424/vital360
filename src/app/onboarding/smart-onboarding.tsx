@@ -27,9 +27,11 @@ import {
   OBJECTIVE_LABELS,
   PLACES,
   recommendObjective,
+  assessGoalSafety,
   WORK_TYPES,
   type Intensity,
   type Objective,
+  type SafetyWarning,
 } from "@/lib/nutrition-plan";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -125,6 +127,18 @@ export function SmartOnboarding({ defaultName }: { defaultName: string }) {
       target_weight_kg: v.target_weight_kg ? num(v.target_weight_kg) : null,
     });
   }, [v]);
+
+  const warnings = useMemo(
+    () =>
+      assessGoalSafety({
+        sex: v.sex,
+        heightCm: v.height_cm ? num(v.height_cm) : null,
+        currentWeightKg: v.weight_kg ? num(v.weight_kg) : null,
+        targetWeightKg: v.target_weight_kg ? num(v.target_weight_kg) : null,
+        kcalTarget: estimate?.daily_kcal ?? null,
+      }),
+    [v.sex, v.height_cm, v.weight_kg, v.target_weight_kg, estimate]
+  );
 
   function validate(s: number): boolean {
     if (s === 0) {
@@ -255,6 +269,7 @@ export function SmartOnboarding({ defaultName }: { defaultName: string }) {
           <span><strong>Plan adaptable:</strong> que se recalcule cuando cambien mis datos.</span>
         </label>
         {estimate && <EstimatePreview est={estimate} />}
+        {warnings.length > 0 && <SafetyBanner warnings={warnings} />}
       </Section>
 
       {/* PASO 5 — Resumen */}
@@ -262,6 +277,7 @@ export function SmartOnboarding({ defaultName }: { defaultName: string }) {
         {estimate ? (
           <>
             <EstimatePreview est={estimate} />
+            {warnings.length > 0 && <SafetyBanner warnings={warnings} />}
             <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
               Al continuar, la IA crea tu plan de entreno, consejos y recetas anti-antojo
               dentro de estos macros. Tarda ~30 segundos. Todo es <strong>editable</strong> y
@@ -301,6 +317,27 @@ function Generating() {
         La IA está armando tu entreno, consejos y recetas anti-antojo dentro de tus
         macros. Esto toma unos segundos.
       </p>
+    </div>
+  );
+}
+
+function SafetyBanner({ warnings }: { warnings: SafetyWarning[] }) {
+  return (
+    <div className="space-y-2">
+      {warnings.map((w, i) => (
+        <div
+          key={i}
+          className={cn(
+            "rounded-xl border p-3 text-xs leading-relaxed",
+            w.level === "warn"
+              ? "border-amber-500/40 bg-amber-500/10"
+              : "border-border bg-muted/40 text-muted-foreground"
+          )}
+        >
+          {w.level === "warn" && <span className="mr-1">💛</span>}
+          {w.message}
+        </div>
+      ))}
     </div>
   );
 }

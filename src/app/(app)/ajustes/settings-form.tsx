@@ -14,6 +14,7 @@ import {
 } from "@/lib/types";
 import {
   ageFromBirthDate,
+  assessGoalSafety,
   computePlan,
   INTENSITIES,
   INTENSITY_LABELS,
@@ -21,6 +22,7 @@ import {
   OBJECTIVE_LABELS,
   type Intensity,
   type Objective,
+  type SafetyWarning,
 } from "@/lib/nutrition-plan";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -84,6 +86,18 @@ export function SettingsForm({
     });
   }, [p, weight]);
 
+  const warnings = useMemo(
+    () =>
+      assessGoalSafety({
+        sex: p.sex || null,
+        heightCm: p.height_cm ? Number(p.height_cm) : null,
+        currentWeightKg: weight,
+        targetWeightKg: p.target_weight_kg ? Number(p.target_weight_kg) : null,
+        kcalTarget: est?.daily_kcal ?? null,
+      }),
+    [p.sex, p.height_cm, p.target_weight_kg, weight, est]
+  );
+
   function saveProfile() {
     setMsgP(null);
     startP(async () => {
@@ -113,6 +127,20 @@ export function SettingsForm({
   const setG2 = (k: keyof typeof g, v: string) => setG((prev) => ({ ...prev, [k]: v }));
   const [savingG, startG] = useTransition();
   const [msgG, setMsgG] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const manualWarn = useMemo<SafetyWarning[]>(() => {
+    const k = Number(g.kcal_target);
+    if (!g.kcal_target || !Number.isFinite(k) || k <= 0) return [];
+    const floor = p.sex === "F" ? 1200 : 1500;
+    return k < floor
+      ? [
+          {
+            level: "warn",
+            message: `Esa meta (${k} kcal) está por debajo del mínimo recomendado (${floor} kcal). Confírmalo con tu nutricionista.`,
+          },
+        ]
+      : [];
+  }, [g.kcal_target, p.sex]);
 
   function saveManual() {
     setMsgG(null);
@@ -172,6 +200,7 @@ export function SettingsForm({
               <span className="text-muted-foreground"> · P {est.protein_g} · C {est.carbs_g} · G {est.fat_g} g</span>
             </div>
           )}
+          {warnings.length > 0 && <SafetyBanner warnings={warnings} />}
           {msgP && (
             <p className={cn("flex items-center gap-1.5 text-sm", msgP.ok ? "text-emerald-600" : "text-destructive")}>
               {msgP.ok ? <Check className="size-4" /> : <X className="size-4" />} {msgP.text}
@@ -199,6 +228,7 @@ export function SettingsForm({
             <NumField label="Carbs" value={g.carbs_g} onChange={(v) => setG2("carbs_g", v)} />
             <NumField label="Grasa" value={g.fat_g} onChange={(v) => setG2("fat_g", v)} />
           </div>
+          {manualWarn.length > 0 && <SafetyBanner warnings={manualWarn} />}
           {msgG && (
             <p className={cn("flex items-center gap-1.5 text-sm", msgG.ok ? "text-emerald-600" : "text-destructive")}>
               {msgG.ok ? <Check className="size-4" /> : <X className="size-4" />} {msgG.text}
@@ -228,6 +258,27 @@ export function SettingsForm({
         <Sparkles className="size-3.5" /> Tras cambiar tu objetivo, ve a “Tu plan” y pulsa
         “Regenerar” para actualizar entreno y recetas.
       </p>
+    </div>
+  );
+}
+
+function SafetyBanner({ warnings }: { warnings: SafetyWarning[] }) {
+  return (
+    <div className="space-y-2">
+      {warnings.map((w, i) => (
+        <div
+          key={i}
+          className={cn(
+            "rounded-xl border p-3 text-xs leading-relaxed",
+            w.level === "warn"
+              ? "border-amber-500/40 bg-amber-500/10"
+              : "border-border bg-muted/40 text-muted-foreground"
+          )}
+        >
+          {w.level === "warn" && <span className="mr-1">💛</span>}
+          {w.message}
+        </div>
+      ))}
     </div>
   );
 }

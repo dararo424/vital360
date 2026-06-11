@@ -18,6 +18,59 @@ import {
   type Sex,
 } from "@/lib/types";
 
+// ── Salvaguardas de seguridad (TCA) ─────────────────────────────────────────
+
+export type SafetyWarning = { level: "warn" | "info"; message: string };
+
+/**
+ * Detecta metas potencialmente dañinas (peso bajo, calorías al mínimo, pérdida
+ * muy grande) para mostrar mensajes de APOYO, sin bloquear. Principio Vital360:
+ * cuidar el bienestar, no empujar extremos.
+ */
+export function assessGoalSafety(input: {
+  sex?: string | null;
+  heightCm?: number | null;
+  currentWeightKg?: number | null;
+  targetWeightKg?: number | null;
+  kcalTarget?: number | null;
+}): SafetyWarning[] {
+  const { sex, heightCm, currentWeightKg, targetWeightKg, kcalTarget } = input;
+  const warns: SafetyWarning[] = [];
+
+  if (heightCm && targetWeightKg) {
+    const m = heightCm / 100;
+    const bmi = targetWeightKg / (m * m);
+    if (bmi < 18.5) {
+      warns.push({
+        level: "warn",
+        message:
+          "Tu peso meta queda por debajo de un rango saludable (IMC < 18,5). Considera una meta más alta y consúltalo con un profesional de la salud.",
+      });
+    }
+  }
+
+  const floor = sex === "F" ? 1200 : 1500;
+  if (kcalTarget != null && kcalTarget <= floor) {
+    warns.push({
+      level: "warn",
+      message: `Tu meta de calorías está en el mínimo recomendado (${floor} kcal). No bajes de ahí sin supervisión profesional.`,
+    });
+  }
+
+  if (currentWeightKg && targetWeightKg && currentWeightKg > targetWeightKg) {
+    const pct = (currentWeightKg - targetWeightKg) / currentWeightKg;
+    if (pct > 0.25) {
+      warns.push({
+        level: "info",
+        message:
+          "Tu meta implica una pérdida grande. Es más sano y sostenible ir por etapas; la app no aplica déficits agresivos.",
+      });
+    }
+  }
+
+  return warns;
+}
+
 // ── Catálogos ────────────────────────────────────────────────────────────────
 
 export const OBJECTIVES = [

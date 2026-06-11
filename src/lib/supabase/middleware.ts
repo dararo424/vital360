@@ -10,7 +10,7 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 
 // Rutas públicas a las que se puede acceder sin sesión.
-const PUBLIC_ROUTES = ["/login", "/signup", "/auth"];
+const PUBLIC_ROUTES = ["/login", "/signup", "/auth", "/legal"];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
