@@ -27,6 +27,7 @@ import { TrendChart, type TrendPoint } from "./trend-chart";
 import { WeightMini, type WeightPoint } from "./weight-mini";
 import { WaterCard } from "./water-card";
 import { NutritionCoach } from "./nutrition-coach";
+import { AntiCraving } from "./anti-craving";
 
 export const metadata: Metadata = { title: "Inicio · Vital360" };
 export const maxDuration = 60; // análisis nutricional con IA
@@ -177,7 +178,8 @@ export default async function DashboardPage() {
             <Sparkles className="size-4 text-primary" /> Coach nutricional
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
+          <AntiCraving />
           <NutritionCoach />
         </CardContent>
       </Card>

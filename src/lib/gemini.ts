@@ -420,6 +420,62 @@ ${brief}`;
   return result.response.text();
 }
 
+const cravingSchema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    message: { type: SchemaType.STRING },
+    options: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          kind: { type: SchemaType.STRING },
+          title: { type: SchemaType.STRING },
+          detail: { type: SchemaType.STRING },
+        },
+        required: ["kind", "title", "detail"],
+      },
+    },
+  },
+  required: ["message", "options"],
+};
+
+/**
+ * Ayuda anti-antojo "en el momento": mensaje empático + 3 salidas concretas
+ * (un snack/receta que satisface y cabe en lo que le queda, un truco conductual,
+ * y un "date el gusto consciente" sin culpa). Devuelve JSON crudo.
+ */
+export async function antiCravingRaw(brief: string): Promise<string> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY no configurada");
+
+  const prompt = `Eres un coach de hábitos cálido y sin juicios. El usuario tiene un ANTOJO ahora mismo y pidió ayuda. Dale apoyo inmediato y práctico.
+Reglas:
+- "message": 1-2 frases empáticas, normalizando el antojo (sin culpa, sin sermón).
+- "options": EXACTAMENTE 3 salidas, cada una con "kind", "title" (corto) y "detail" (1-2 frases concretas):
+  1. kind="receta": un snack o mini-receta que SATISFACE ese antojo y cabe en las calorías que le quedan hoy (usa alimentos reales y caseros de Colombia).
+  2. kind="truco": un truco conductual de 0 calorías (esperar 10-15 min, tomar agua, distraerse, identificar si es hambre o ansiedad).
+  3. kind="gusto": darse el gusto PERO consciente (porción pequeña, sin culpa, cómo encajarlo). Nunca prohíbas.
+- Tono cálido, colombiano, breve. Nada de restricción extrema ni vergüenza.
+Responde SOLO JSON: { "message": string, "options": [ { "kind": string, "title": string, "detail": string } ] }.
+
+CONTEXTO:
+${brief}`;
+
+  const genAI = new GoogleGenerativeAI(key);
+  const model = genAI.getGenerativeModel({
+    model: MODEL,
+    generationConfig: {
+      responseMimeType: "application/json",
+      // @ts-expect-error responseSchema acepta este shape en runtime
+      responseSchema: cravingSchema,
+      temperature: 0.6,
+    },
+  });
+  const result = await model.generateContent(prompt);
+  return result.response.text();
+}
+
 /** Quita fences de markdown por si el modelo los añade pese al responseMimeType. */
 export function stripJsonFences(text: string): string {
   return text

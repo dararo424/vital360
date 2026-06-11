@@ -9,7 +9,14 @@ import { getUser, today } from "@/lib/dal";
  * carrera del read+upsert es despreciable.
  */
 
-export type AiKind = "analyze" | "plan" | "recipe" | "image" | "grocery" | "insight";
+export type AiKind =
+  | "analyze"
+  | "plan"
+  | "recipe"
+  | "image"
+  | "grocery"
+  | "insight"
+  | "craving";
 
 // Límite diario por usuario, por tipo de acción.
 const LIMITS: Record<AiKind, number> = {
@@ -19,6 +26,7 @@ const LIMITS: Record<AiKind, number> = {
   image: 10, // foto IA del plato (gasta créditos)
   grocery: 8, // lista de mercado con IA
   insight: 10, // análisis nutricional con IA
+  craving: 20, // ayuda anti-antojo
 };
 
 export const AI_LIMIT_MESSAGE: Record<AiKind, string> = {
@@ -28,6 +36,7 @@ export const AI_LIMIT_MESSAGE: Record<AiKind, string> = {
   image: "Llegaste al límite diario de fotos generadas con IA. Intenta mañana.",
   grocery: "Límite diario de generación con IA alcanzado.",
   insight: "Llegaste al límite diario de análisis nutricional. Intenta mañana.",
+  craving: "Llegaste al límite diario de ayuda anti-antojo. Intenta mañana.",
 };
 
 /**
