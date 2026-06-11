@@ -36,6 +36,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DecimalInput } from "@/components/ui/decimal-input";
 import { Label } from "@/components/ui/label";
 
 const STEPS = ["Tú", "Estilo de vida", "Hábitos", "Objetivo", "Tu plan"] as const;
@@ -231,7 +232,7 @@ export function SmartOnboarding({ defaultName }: { defaultName: string }) {
         <Field label="¿Dónde entrenas?"><Options options={Object.entries(PLACES)} value={v.q.place} onChange={(x) => setQ("place", x)} /></Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Días/semana para entrenar"><Input type="number" inputMode="numeric" value={v.q.training_days} onChange={(e) => setQ("training_days", e.target.value)} placeholder="4" /></Field>
-          <Field label="Horas de sueño"><Input type="number" inputMode="decimal" value={v.q.sleep_hours} onChange={(e) => setQ("sleep_hours", e.target.value)} placeholder="7" /></Field>
+          <Field label="Horas de sueño"><DecimalInput value={v.q.sleep_hours} onChange={(val) => setQ("sleep_hours", val)} placeholder="7" /></Field>
         </div>
       </Section>
 

@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { DecimalInput } from "@/components/ui/decimal-input";
 import { Label } from "@/components/ui/label";
 
 type Fields = Record<keyof FoodInput, string>;
@@ -105,11 +106,9 @@ export function NewFoodDialog({
             </div>
             <div className="space-y-1.5">
               <Label>Porción (g)</Label>
-              <Input
-                type="number"
-                inputMode="numeric"
+              <DecimalInput
                 value={fields.serving_g}
-                onChange={(e) => set("serving_g")(e.target.value)}
+                onChange={set("serving_g")}
               />
             </div>
           </div>
@@ -163,13 +162,7 @@ function NumField({
   return (
     <div className="space-y-1.5">
       <Label className="text-xs">{label}</Label>
-      <Input
-        type="number"
-        inputMode="decimal"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="0"
-      />
+      <DecimalInput value={value} onChange={onChange} placeholder="0" />
     </div>
   );
 }

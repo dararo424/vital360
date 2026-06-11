@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { Loader2, Plus, Search, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { createExercise, logWorkout, updateWorkout } from "@/app/actions/workouts";
+import { DecimalInput } from "@/components/ui/decimal-input";
 import { RestTimer } from "./rest-timer";
 import {
   EXERCISE_TYPES,
@@ -287,9 +288,9 @@ export function WorkoutEditor({
               {b.rows.map((r, i) => (
                 <div key={r.key} className="grid grid-cols-[1.5rem_1fr_1fr_3rem_1.5rem] items-center gap-2">
                   <span className="text-sm text-muted-foreground">{i + 1}</span>
-                  <Input type="number" inputMode="decimal" value={r.a} onChange={(e) => setRow(b.key, r.key, "a", e.target.value)} className="h-8 px-2 text-center" />
-                  <Input type="number" inputMode="decimal" value={r.b} onChange={(e) => setRow(b.key, r.key, "b", e.target.value)} className="h-8 px-2 text-center" />
-                  <Input type="number" inputMode="decimal" value={r.rpe} onChange={(e) => setRow(b.key, r.key, "rpe", e.target.value)} className="h-8 px-1 text-center" />
+                  <DecimalInput value={r.a} onChange={(val) => setRow(b.key, r.key, "a", val)} className="h-8 px-2 text-center" />
+                  <DecimalInput value={r.b} onChange={(val) => setRow(b.key, r.key, "b", val)} className="h-8 px-2 text-center" />
+                  <DecimalInput value={r.rpe} onChange={(val) => setRow(b.key, r.key, "rpe", val)} className="h-8 px-1 text-center" />
                   <button type="button" onClick={() => removeRow(b.key, r.key)} aria-label="Quitar serie" className="text-muted-foreground hover:text-destructive">
                     <X className="size-4" />
                   </button>

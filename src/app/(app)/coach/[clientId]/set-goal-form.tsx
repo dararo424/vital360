@@ -6,7 +6,7 @@ import { Check, X } from "lucide-react";
 import { setClientGoal } from "@/app/actions/coach";
 import type { Macros } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { DecimalInput } from "@/components/ui/decimal-input";
 import { Label } from "@/components/ui/label";
 
 export function SetGoalForm({
@@ -51,11 +51,9 @@ export function SetGoalForm({
         ).map(([key, label]) => (
           <div key={key} className="space-y-1">
             <Label className="text-[11px] text-muted-foreground">{label}</Label>
-            <Input
-              type="number"
-              inputMode="decimal"
+            <DecimalInput
               value={g[key]}
-              onChange={(e) => set(key, e.target.value)}
+              onChange={(v) => set(key, v)}
               className="px-1.5 text-center"
             />
           </div>

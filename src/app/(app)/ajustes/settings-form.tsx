@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { DecimalInput } from "@/components/ui/decimal-input";
 import { Label } from "@/components/ui/label";
 
 type ProfileProp = {
@@ -182,7 +183,7 @@ export function SettingsForm({
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Peso meta (kg)">
-              <Input type="number" inputMode="decimal" value={p.target_weight_kg} onChange={(e) => setField("target_weight_kg", e.target.value)} placeholder="—" />
+              <DecimalInput value={p.target_weight_kg} onChange={(v) => setField("target_weight_kg", v)} placeholder="—" />
             </Field>
             <Field label="Intensidad">
               <Options options={INTENSITIES.map((i) => [i, INTENSITY_LABELS[i]])} value={p.intensity} onChange={(v) => setField("intensity", v as Intensity)} vertical />
@@ -290,7 +291,7 @@ function NumField({ label, value, onChange }: { label: string; value: string; on
   return (
     <div className="space-y-1">
       <Label className="text-[11px] text-muted-foreground">{label}</Label>
-      <Input type="number" inputMode="decimal" value={value} onChange={(e) => onChange(e.target.value)} className="px-1.5 text-center" />
+      <DecimalInput value={value} onChange={onChange} className="px-1.5 text-center" />
     </div>
   );
 }
