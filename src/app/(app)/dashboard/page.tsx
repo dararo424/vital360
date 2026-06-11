@@ -9,6 +9,7 @@ import {
   Settings,
   ShoppingCart,
   Sparkles,
+  Users,
   UtensilsCrossed,
 } from "lucide-react";
 import {
@@ -215,6 +216,11 @@ export default async function DashboardPage() {
         <Button asChild size="lg" variant="outline" className="h-12">
           <Link href="/mercado">
             <ShoppingCart /> Lista de mercado
+          </Link>
+        </Button>
+        <Button asChild size="lg" variant="outline" className="col-span-2 h-12">
+          <Link href="/familia">
+            <Users /> Familia
           </Link>
         </Button>
       </div>
