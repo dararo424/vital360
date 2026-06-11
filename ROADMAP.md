@@ -39,10 +39,11 @@ coma en el peso** (es-CO).
 ## 📌 Pendiente
 
 ### 🟢 Pulido / robustez
-1. **Modo offline real** (el service worker hoy solo hace push; falta cachear la app). ← siguiente
+1. ✅ ~~Soporte offline (básico)~~ — el SW cachea el shell y los assets, abre sin conexión con pantalla `/offline` y sirve lo último visto. (Pendiente avanzado: registrar comidas offline y sincronizar.)
 2. ✅ ~~Salvaguardas de TCA + privacidad/términos~~ — página /legal, consentimiento al registrarse, banners de apoyo ante metas extremas (onboarding y ajustes).
-3. **Skeletons de carga** y reintentos automáticos cuando la IA falla.
+3. ✅ ~~Skeletons de carga + feedback de navegación~~ — esqueleto al cambiar de pantalla + spinner en el ítem del nav. (Pendiente: reintentos automáticos cuando la IA falla.)
 4. **Decimales con coma en TODOS los campos** (hoy solo peso/medidas; faltaría macros, gramos, etc.).
+5. **Coach nutricional IA** ✅ — análisis semanal de alimentos vs metas con consejos accionables.
 
 ### 📲 Integración con salud del dispositivo
 5. **Apple Health (iOS) + Health Connect / Google Fit (Android)** — leer peso, pasos, calorías quemadas, frecuencia cardiaca; escribir lo que registras.

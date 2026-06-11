@@ -48,6 +48,9 @@ const themeScript = `(function(){try{var m=window.matchMedia('(prefers-color-sch
 // antes de montar cualquier componente), para luego ofrecerlo desde Ajustes.
 const installScript = `(function(){window.__deferredInstallPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__deferredInstallPrompt=e;});window.addEventListener('appinstalled',function(){window.__deferredInstallPrompt=null;});})();`;
 
+// Registra el service worker (caché offline + push) en cada carga.
+const swScript = `(function(){if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -62,6 +65,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script dangerouslySetInnerHTML={{ __html: installScript }} />
+        <script dangerouslySetInnerHTML={{ __html: swScript }} />
         {children}
       </body>
     </html>
