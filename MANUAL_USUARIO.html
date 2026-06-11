@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vital360 — Manual de usuario</title>
+<style>
+  :root { --green:#16a34a; --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --bg:#ffffff; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+         color: var(--ink); line-height: 1.6; max-width: 820px; margin: 0 auto;
+         padding: 48px 40px; background: var(--bg); font-size: 15px; }
+  h1 { color: var(--green); font-size: 30px; border-bottom: 3px solid var(--green);
+       padding-bottom: 10px; margin-top: 8px; }
+  h2 { color: var(--green); font-size: 22px; margin-top: 34px; border-bottom: 1px solid var(--line);
+       padding-bottom: 6px; }
+  h3 { font-size: 17px; margin-top: 22px; color: #111827; }
+  a { color: var(--green); text-decoration: none; }
+  blockquote { border-left: 4px solid var(--green); background: #f0fdf4; margin: 18px 0;
+               padding: 12px 18px; border-radius: 0 8px 8px 0; color: #14532d; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  th { background: #f0fdf4; color: #14532d; }
+  code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 90%; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 4px 0; }
+  hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+  em { color: var(--muted); }
+  @page { margin: 2cm; }
+</style>
+</head>
+<body>
+<h1>🌱 Vital360 — Manual de usuario</h1>
+<p>Bienvenido a <strong>Vital360</strong>, tu app de nutrición y ejercicio con inteligencia
+artificial. Esta guía explica, en lenguaje sencillo, <strong>todo lo que la app puede
+hacer</strong> y <strong>cómo usar cada función</strong> paso a paso.</p>
+<blockquote>
+<p><strong>Lo más importante primero:</strong> Vital360 es una <strong>herramienta de apoyo</strong>, no un
+consejo médico. Las metas de calorías y macros las define <strong>tu nutricionista</strong>;
+la app solo cuenta, registra y sugiere <em>dentro</em> de esas metas. Los estimados de
+la IA siempre son <strong>editables</strong> y nunca proponen déficits agresivos. La idea es
+quitarte carga, no sumarte presión.</p>
+</blockquote>
+<hr>
+<h2>Índice</h2>
+<ol>
+<li><a href="#1-primeros-pasos">Primeros pasos: crear cuenta e iniciar sesión</a></li>
+<li><a href="#2-onboarding">Onboarding: configurar tu perfil y tu plan</a></li>
+<li><a href="#3-c%C3%B3mo-moverte-por-la-app">Cómo moverte por la app (menú inferior)</a></li>
+<li><a href="#4-inicio--dashboard">Inicio / Dashboard</a></li>
+<li><a href="#5-registrar-comida">Registrar comida</a></li>
+<li><a href="#6-diario">Diario</a></li>
+<li><a href="#7-tu-plan">Tu plan</a></li>
+<li><a href="#8-recetas">Recetas</a></li>
+<li><a href="#9-plan-semanal">Plan semanal</a></li>
+<li><a href="#10-lista-de-mercado">Lista de mercado</a></li>
+<li><a href="#11-entrenos">Entrenos</a></li>
+<li><a href="#12-progreso">Progreso</a></li>
+<li><a href="#13-agua--hidrataci%C3%B3n">Agua / hidratación</a></li>
+<li><a href="#14-coach-nutricional-ia">Coach nutricional IA</a></li>
+<li><a href="#15-tu-nutricionista">Tu nutricionista (y panel del coach)</a></li>
+<li><a href="#16-mensajes">Mensajes</a></li>
+<li><a href="#17-ajustes">Ajustes</a></li>
+<li><a href="#18-recordatorios-e-instalar-la-app">Recordatorios e instalar la app</a></li>
+<li><a href="#19-privacidad-datos-y-bienestar">Privacidad, datos y bienestar</a></li>
+<li><a href="#20-preguntas-frecuentes">Preguntas frecuentes</a></li>
+</ol>
+<hr>
+<h2>1. Primeros pasos</h2>
+<h3>Crear tu cuenta</h3>
+<ol>
+<li>Abre la app y pulsa <strong>&quot;Crea una&quot;</strong> (o ve a la pantalla de registro).</li>
+<li>Completa:<ul>
+<li><strong>Nombre completo</strong></li>
+<li><strong>Correo electrónico</strong></li>
+<li><strong>Contraseña</strong> (mínimo 8 caracteres)</li>
+</ul>
+</li>
+<li>Marca la casilla <strong>&quot;Acepto los términos y la política de privacidad,
+incluido el tratamiento de mis datos de salud&quot;</strong>.</li>
+<li>Pulsa <strong>&quot;Crear cuenta&quot;</strong>.</li>
+<li>Revisa tu correo: te llega un <strong>email de confirmación</strong>. Ábrelo para activar
+la cuenta y luego vuelve a la app a iniciar sesión.</li>
+</ol>
+<h3>Iniciar sesión</h3>
+<ol>
+<li>Pulsa <strong>&quot;Iniciar sesión&quot;</strong>.</li>
+<li>Escribe tu <strong>correo</strong> y <strong>contraseña</strong> y pulsa <strong>&quot;Iniciar sesión&quot;</strong>.</li>
+<li>Si es tu primera vez, la app te lleva directo al <strong>onboarding</strong> (paso 2).
+Si ya lo completaste, entras al <strong>Inicio</strong>.</li>
+</ol>
+<blockquote>
+<p>Tu sesión funciona en varios dispositivos a la vez (móvil, tablet, computador).</p>
+</blockquote>
+<hr>
+<h2>2. Onboarding</h2>
+<p>La primera vez, un asistente de <strong>5 pasos</strong> recoge tus datos y crea tu plan con
+IA. Arriba verás una barra de progreso: <strong>Tú → Estilo de vida → Hábitos →
+Objetivo → Tu plan</strong>.</p>
+<h3>Paso 1 — Cuéntanos de ti</h3>
+<ul>
+<li>Nombre, sexo, fecha de nacimiento, estatura (cm) y <strong>peso actual</strong> (kg).</li>
+<li>Los decimales aceptan <strong>coma o punto</strong> (ej. <code>72,5</code>).</li>
+</ul>
+<h3>Paso 2 — Tu estilo de vida</h3>
+<ul>
+<li><strong>Nivel de actividad diaria</strong> (sedentario, leve, moderado, intenso).</li>
+<li>Tu trabajo, dónde entrenas, días/semana de entreno y horas de sueño.</li>
+</ul>
+<h3>Paso 3 — Tus hábitos</h3>
+<ul>
+<li>Comidas al día, si comes fuera, en qué comida fallas más y tus <strong>antojos</strong>.</li>
+<li>Tiempo para cocinar, presupuesto, <strong>alergias/intolerancias</strong> y alimentos que
+no te gustan. Esto ayuda a que la IA proponga recetas que sí vas a comer.</li>
+</ul>
+<h3>Paso 4 — Tu objetivo</h3>
+<ul>
+<li><strong>Qué quieres lograr</strong>: perder peso, ganar músculo, mantener o mejorar salud.
+La app te sugiere una opción según tu peso, pero <strong>tú decides</strong>.</li>
+<li><strong>Peso meta</strong> (opcional) e <strong>intensidad</strong> del plan: suave, equilibrado o
+agresivo.</li>
+<li>Casilla <strong>&quot;Plan adaptable&quot;</strong>: que tu meta se recalcule sola cuando registres
+tu peso.</li>
+<li>Verás una <strong>vista previa</strong> del estimado diario (kcal y macros), tu
+mantenimiento aproximado, el ritmo por semana y los meses hasta tu meta. Si la
+cifra es muy baja, aparece una <strong>advertencia de seguridad</strong>.</li>
+</ul>
+<h3>Paso 5 — Todo listo</h3>
+<ul>
+<li>Revisa el resumen y pulsa <strong>&quot;Generar mi plan&quot;</strong>. La IA tarda <strong>~30 segundos</strong>
+en crear tu plan de entreno, consejos y recetas anti-antojo dentro de tus
+macros. Todo es <strong>editable</strong> y un punto de partida — valídalo con tu nutri.</li>
+</ul>
+<blockquote>
+<p>Puedes pulsar <strong>&quot;Atrás&quot;</strong> en cualquier paso para corregir tus datos.</p>
+</blockquote>
+<hr>
+<h2>3. Cómo moverte por la app</h2>
+<p>En la parte inferior tienes una <strong>barra de navegación</strong> siempre visible con 5
+secciones:</p>
+<table>
+<thead>
+<tr>
+<th>Icono</th>
+<th>Sección</th>
+<th>Para qué sirve</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>🏠</td>
+<td><strong>Inicio</strong></td>
+<td>Tu resumen del día</td>
+</tr>
+<tr>
+<td>➕</td>
+<td><strong>Registrar</strong></td>
+<td>Anotar lo que comiste</td>
+</tr>
+<tr>
+<td>🍽️</td>
+<td><strong>Recetas</strong></td>
+<td>Tus recetas y sugerencias IA</td>
+</tr>
+<tr>
+<td>🏋️</td>
+<td><strong>Entrenos</strong></td>
+<td>Registrar y ver tus entrenamientos</td>
+</tr>
+<tr>
+<td>📈</td>
+<td><strong>Progreso</strong></td>
+<td>Peso, medidas y fotos</td>
+</tr>
+</tbody></table>
+<p>Otras pantallas (Tu plan, Diario, Plan semanal, Lista de mercado, Ajustes,
+Mensajes) se abren desde <strong>Inicio</strong> o desde <strong>Ajustes</strong>.</p>
+<p>La app es <strong>mobile-first</strong> (pensada para el teléfono) y puede <strong>instalarse</strong>
+como app (ver sección 18).</p>
+<hr>
+<h2>4. Inicio / Dashboard</h2>
+<p>Es tu pantalla principal. De arriba a abajo encuentras:</p>
+<ul>
+<li><strong>Saludo</strong> con tu inicial, y accesos a <strong>Ajustes</strong> (engranaje) y <strong>Cerrar
+sesión</strong>.</li>
+<li><strong>Racha de registro</strong> 🔥 — días seguidos registrando comidas, con 7 puntitos
+que muestran qué días de la última semana registraste algo.</li>
+<li><strong>Tarjeta &quot;Hoy&quot;</strong> — un <strong>anillo de calorías</strong> (verde si vas dentro de la meta,
+rojo si te pasaste), las kcal restantes y <strong>barras de Proteína, Carbos y
+Grasa</strong> consumidas vs. meta.</li>
+<li><strong>Agua</strong> — litros y vasos del día, con botones rápidos (vaso de 250 ml,
+botella de 500 ml) y ± para ajustar (ver sección 13).</li>
+<li><strong>Coach nutricional IA</strong> — botones <strong>&quot;Se me antoja algo&quot;</strong> y <strong>&quot;Analiza mi
+semana&quot;</strong> (ver sección 14).</li>
+<li><strong>Accesos rápidos</strong> — Ver tu plan, Registrar comida, Registrar entreno, Plan
+semanal y Lista de mercado.</li>
+<li><strong>Gráfico de tendencia</strong> — evolución de calorías de los últimos <strong>7 o 30
+días</strong> (puedes alternar) con tu meta marcada en línea punteada.</li>
+<li><strong>Tarjeta de peso</strong> — tu peso actual, el cambio total del periodo y una mini
+gráfica. Si aún no tienes registros, te enlaza a Progreso.</li>
+</ul>
+<hr>
+<h2>5. Registrar comida</h2>
+<p>Pulsa <strong>➕ Registrar</strong>. Arriba verás cuántas <strong>kcal y macros te quedan hoy</strong>.
+Hay <strong>tres formas</strong> de registrar, en pestañas:</p>
+<h3>🎙️ Hablar (dictar)</h3>
+<ol>
+<li>Pulsa el <strong>micrófono</strong> y di lo que comiste (ej. <em>&quot;dos arepas con huevo y un
+café con leche&quot;</em>), o escríbelo en el cuadro de texto.</li>
+<li>Pulsa <strong>&quot;Interpretar con IA&quot;</strong>.</li>
+<li>La IA arma la lista de alimentos con sus macros y un <strong>% de confianza</strong>.</li>
+</ol>
+<h3>📷 Foto</h3>
+<ol>
+<li>Pulsa <strong>&quot;Tomar o subir foto&quot;</strong> y captura tu plato.</li>
+<li>Pulsa <strong>&quot;Analizar con IA&quot;</strong>. Gemini Vision identifica cada alimento, estima
+gramos y macros, y muestra su <strong>confianza</strong> (verde alta, ámbar media, rojo
+baja).</li>
+</ol>
+<h3>✍️ Manual</h3>
+<ol>
+<li>Elige <strong>tipo de comida</strong> (Desayuno, Almuerzo, Cena, Snack) y <strong>fecha</strong>.</li>
+<li>Busca el alimento (mínimo 2 letras). Se busca en:<ul>
+<li><strong>Tu catálogo</strong> (alimentos guardados).</li>
+<li><strong>Open Food Facts</strong> (base internacional con miles de productos).</li>
+</ul>
+</li>
+<li>Sin escribir nada, ves tus <strong>Favoritos</strong> ⭐ y <strong>Recientes</strong> para ir más rápido.</li>
+<li>¿No aparece? Tienes dos opciones:<ul>
+<li><strong>Escanear código de barras</strong>: pulsa el botón, apunta la cámara al código
+(o escríbelo a mano) y la app trae el producto.</li>
+<li><strong>Crear alimento nuevo</strong>: nombre, marca, porción en gramos y macros.</li>
+</ul>
+</li>
+</ol>
+<h3>Para cualquiera de las tres formas</h3>
+<ul>
+<li><strong>Edita</strong> libremente gramos, kcal, proteína, carbos y grasa de cada alimento
+(la IA es una estimación de apoyo, <strong>no una medición exacta</strong>).</li>
+<li>Añade una <strong>nota</strong> opcional (&quot;algo que recordar de esta comida&quot;).</li>
+<li>Abajo, una barra fija muestra el <strong>total</strong> y el botón <strong>&quot;Guardar comida&quot;</strong>.</li>
+</ul>
+<hr>
+<h2>6. Diario</h2>
+<p>Pulsa el acceso al <strong>Diario</strong> para ver lo que comiste por día.</p>
+<ul>
+<li><strong>Navega entre fechas</strong> con ◄ ►; pulsa <strong>&quot;Volver a hoy&quot;</strong> para regresar.</li>
+<li><strong>Total del día</strong>: kcal y macros consumidos vs. tu meta, incluida la <strong>fibra</strong>.</li>
+<li>Tus comidas aparecen agrupadas por tipo (Desayuno → Almuerzo → Cena → Snack →
+Otro). Un icono indica si vino de <strong>foto 📷</strong> o <strong>manual ✏️</strong>.</li>
+<li>En cada comida puedes:<ul>
+<li><strong>Repetir hoy</strong> — duplica esa comida en el día actual con un toque.</li>
+<li><strong>Editar</strong> — cambia alimentos, gramos, tipo, fecha o nota.</li>
+<li><strong>Borrar</strong> (pide confirmación).</li>
+<li><strong>Guardar como receta</strong> — convierte esa combinación en una receta
+reutilizable.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>7. Tu plan</h2>
+<p>Pulsa <strong>&quot;Ver tu plan&quot;</strong> desde Inicio. Aquí vive el plan que la IA creó para ti:</p>
+<ul>
+<li><strong>Tu estimado diario</strong> — kcal y macros objetivo, tu mantenimiento aproximado,
+el ritmo por semana y cuándo llegarías a tu meta. Recuerda: es <strong>estimación de
+apoyo editable, no una prescripción</strong> — valídala con tu nutricionista.</li>
+<li><strong>Resumen</strong> — explicación del plan.</li>
+<li><strong>Entreno</strong> — sesiones de la semana en acordeones; al abrir uno ves los
+ejercicios y puedes pulsar <strong>&quot;Empezar este entreno&quot;</strong> para registrarlo ya.</li>
+<li><strong>Consejos para ti</strong> — recomendaciones personalizadas.</li>
+<li><strong>Calma tus antojos</strong> 🍫➜🍎 — alternativas saludables a tus antojos.</li>
+<li><strong>Recetas recomendadas</strong> — con ingredientes, preparación, y botones para
+<strong>Guardar receta</strong>, <strong>Generar foto</strong> (imagen IA del plato) y <strong>Ver video</strong>.</li>
+</ul>
+<p>Pulsa <strong>&quot;Regenerar&quot;</strong> (arriba) para crear un plan nuevo, por ejemplo después de
+cambiar tu objetivo en Ajustes.</p>
+<hr>
+<h2>8. Recetas</h2>
+<p>Pulsa <strong>🍽️ Recetas</strong>. Verás tus recetas con sus <strong>macros por porción</strong>, tags y
+favoritos.</p>
+<h3>Crear una receta</h3>
+<ol>
+<li>Pulsa <strong>&quot;+ Nueva&quot;</strong>.</li>
+<li>(Opcional) <strong>Sugerir con IA</strong>: escribe una preferencia (ej. <em>&quot;vegetariano,
+con pollo&quot;</em>) y la IA propone una receta <strong>dentro de tus macros restantes</strong> del
+día.</li>
+<li>Completa <strong>título</strong>, <strong>porciones</strong>, <strong>tiempo de prep</strong> y <strong>tags</strong> (puedes
+crear los tuyos).</li>
+<li><strong>Busca y agrega ingredientes</strong>, ajustando los <strong>gramos</strong> de cada uno. Las
+macros por porción se calculan <strong>solas</strong>.</li>
+<li>Escribe las <strong>instrucciones</strong> y pulsa <strong>&quot;Crear receta&quot;</strong>.</li>
+</ol>
+<h3>Ver / editar una receta</h3>
+<ul>
+<li>Abre cualquier receta para ver foto, ingredientes, instrucciones y macros.</li>
+<li>Marca/desmarca <strong>favorito</strong> ❤️.</li>
+<li><strong>Generar foto con IA</strong> del plato, <strong>Editar</strong> o <strong>Borrar</strong>.</li>
+</ul>
+<blockquote>
+<p>Recuerda que desde el <strong>Diario</strong> puedes <strong>guardar una comida registrada como
+receta</strong> para reutilizarla.</p>
+</blockquote>
+<hr>
+<h2>9. Plan semanal</h2>
+<p>Planifica tus comidas de toda la semana.</p>
+<ol>
+<li>Verás <strong>7 días</strong> (Lun–Dom); navega entre semanas con ◄ ►.</li>
+<li>En cada día y comida (Desayuno, Almuerzo, Merienda, Cena) pulsa <strong>&quot;+ Agregar&quot;</strong>.</li>
+<li>Elige <strong>porciones</strong> y agrega una <strong>receta</strong> guardada o un <strong>alimento</strong> buscado.</li>
+<li>Cada día suma sus <strong>calorías vs. tu meta</strong>, para que ajustes el equilibrio.</li>
+<li>Quita cualquier elemento con la <strong>X</strong>.</li>
+<li>Pulsa <strong>&quot;Lista&quot;</strong> (arriba) para generar automáticamente tu <strong>lista de mercado</strong>.</li>
+</ol>
+<hr>
+<h2>10. Lista de mercado</h2>
+<p>Se genera desde el Plan semanal y junta los ingredientes de todas tus recetas.</p>
+<ul>
+<li>Los productos vienen <strong>agrupados por categoría</strong> (Verduras, Frutas, Carnes y
+huevos, Lácteos, Granos y legumbres, Despensa, Otros).</li>
+<li>Arriba ves el progreso (<strong>&quot;X de Y marcados&quot;</strong>).</li>
+<li>En el súper, <strong>toca cada producto</strong> para marcarlo como comprado (se tacha);
+vuelve a tocarlo para desmarcarlo.</li>
+</ul>
+<hr>
+<h2>11. Entrenos</h2>
+<p>Pulsa <strong>🏋️ Entrenos</strong>. Esta pantalla reúne tus entrenamientos, plantillas y
+récords.</p>
+<h3>Registrar un entreno</h3>
+<ol>
+<li>Pulsa <strong>&quot;+ Nuevo&quot;</strong> (o <strong>&quot;Empezar&quot;</strong> desde una plantilla o desde Tu plan).</li>
+<li>Pon <strong>título</strong>, <strong>fecha</strong> y <strong>duración</strong> (opcional).</li>
+<li>Pulsa <strong>&quot;+ Agregar ejercicio&quot;</strong>, búscalo o <strong>créalo</strong> (Fuerza o Cardio).</li>
+<li>Completa las <strong>series</strong>:<ul>
+<li><strong>Fuerza</strong>: reps, peso (kg) y <strong>RPE</strong> (esfuerzo percibido, 1–10).</li>
+<li><strong>Cardio</strong>: minutos, distancia (km) y RPE.</li>
+<li>Añade o elimina series con <strong>&quot;+ Serie&quot;</strong> y la <strong>X</strong>.</li>
+</ul>
+</li>
+<li><strong>Sobrecarga progresiva</strong>: la app te muestra <strong>tu última marca</strong> de cada
+ejercicio (&quot;Última vez: 10×80kg, 8×80kg…&quot;) para que intentes superarte.</li>
+<li>Usa el <strong>temporizador de descanso</strong> con presets (60s, 90s, 2min, 3min); vibra
+al terminar.</li>
+<li>Añade una <strong>nota</strong> y pulsa <strong>&quot;Guardar entreno&quot;</strong>.</li>
+</ol>
+<h3>Plantillas y récords</h3>
+<ul>
+<li><strong>Guarda cualquier entreno como plantilla</strong> para repetir la rutina con un toque.</li>
+<li>La sección <strong>Récords</strong> muestra tus mejores marcas por ejercicio.</li>
+<li>Pulsa un ejercicio para ver su <strong>detalle</strong>: gráfica de <strong>progresión</strong> (mejor
+peso por sesión) e historial de todas las veces que lo hiciste.</li>
+</ul>
+<p>Cada entreno guardado se puede <strong>editar</strong> (incluso series sueltas) o <strong>eliminar</strong>.</p>
+<hr>
+<h2>12. Progreso</h2>
+<p>Pulsa <strong>📈 Progreso</strong> para seguir tu evolución corporal.</p>
+<h3>Registrar peso y medidas</h3>
+<ol>
+<li>Elige la <strong>fecha</strong> (hoy o un día pasado). Si ya hay registro ese día, al
+guardar lo <strong>actualizas</strong>.</li>
+<li>Anota lo que quieras: <strong>peso</strong>, <strong>% de grasa</strong>, <strong>cintura</strong>, <strong>pecho</strong>,
+<strong>brazo</strong>, <strong>muslo</strong> y una <strong>nota</strong>. Decimales con coma o punto.</li>
+<li>Pulsa <strong>&quot;Guardar registro&quot;</strong>. Si tienes el <strong>modo adaptable</strong> activo, tu meta
+de calorías se <strong>recalcula sola</strong> y verás &quot;tu meta se actualizó&quot;.</li>
+</ol>
+<h3>Tendencias</h3>
+<ul>
+<li>Gráfica por métrica (Peso, % grasa, Cintura, Pecho, Brazo, Muslo).</li>
+<li>Incluye una línea de <strong>promedio móvil</strong> que suaviza las subidas y bajadas
+diarias para que veas la tendencia real.</li>
+</ul>
+<h3>Fotos de progreso</h3>
+<ul>
+<li>Pulsa <strong>&quot;Agregar foto de progreso&quot;</strong> (puedes añadir una nota como &quot;semana 1&quot;).</li>
+<li>Con 2 o más fotos, usa el <strong>comparador antes/después</strong>: elige dos fotos y se
+muestran lado a lado.</li>
+<li>Tu <strong>galería</strong> es privada; cada foto puede borrarse.</li>
+</ul>
+<h3>Detección de estancamiento</h3>
+<p>Si tu peso lleva ~3 semanas casi sin cambios, aparece un aviso ámbar con un
+consejo de <strong>apoyo</strong> (constancia, porciones, pasos) y la recomendación de validar
+con tu nutri cualquier ajuste — <strong>sin déficits agresivos</strong>.</p>
+<hr>
+<h2>13. Agua / hidratación</h2>
+<p>Desde la tarjeta <strong>Agua</strong> en Inicio:</p>
+<ul>
+<li>Suma con los botones rápidos: <strong>Vaso (250 ml)</strong> o <strong>Botella (500 ml)</strong>.</li>
+<li>Ajusta con <strong>+ / −</strong> un vaso.</li>
+<li>Ves tu progreso del día (litros y vasos) hacia tu meta.</li>
+</ul>
+<hr>
+<h2>14. Coach nutricional IA</h2>
+<p>En Inicio, la tarjeta <strong>Coach nutricional IA</strong> te da dos ayudas:</p>
+<ul>
+<li><strong>&quot;Se me antoja algo&quot;</strong> — cuando tienes un antojo, la IA te sugiere
+alternativas que encajan en tus macros.</li>
+<li><strong>&quot;Analiza mi semana&quot;</strong> — la IA revisa lo que comiste vs. tus metas y te da un
+<strong>resumen</strong> y <strong>consejos accionables</strong> para mejorar.</li>
+</ul>
+<blockquote>
+<p>Es un análisis de apoyo. Para cambios importantes de tu plan, habla con tu
+nutricionista.</p>
+</blockquote>
+<hr>
+<h2>15. Tu nutricionista</h2>
+<p>Vital360 permite conectar a tu <strong>nutricionista o coach</strong> para que vea tu progreso
+y ajuste tus metas a distancia.</p>
+<h3>Si eres cliente (conectar a tu nutri)</h3>
+<ol>
+<li>Ve a <strong>Ajustes → Tu nutricionista</strong> y pulsa <strong>&quot;Conectar mi nutricionista&quot;</strong>.</li>
+<li>Se genera un <strong>código</strong> de 7 caracteres. <strong>Cópialo y compártelo</strong> con tu
+nutri.</li>
+<li>Cuando se conecte, verás <strong>&quot;Conectado con [nombre]&quot;</strong>. Tu nutri podrá ver tu
+peso, adherencia, fotos de progreso y fijarte metas.</li>
+<li>Puedes <strong>desconectar</strong> cuando quieras desde Ajustes.</li>
+</ol>
+<h3>Si eres nutricionista / coach (panel del coach)</h3>
+<ol>
+<li>Entra a tu panel desde <strong>Ajustes → &quot;¿Eres nutricionista o coach? Entra a tu
+panel →&quot;</strong> (<code>/coach</code>).</li>
+<li>Pídele a tu cliente su <strong>código</strong> e ingrésalo en <strong>&quot;Conectar un cliente&quot;</strong>.</li>
+<li>En la lista <strong>&quot;Tus clientes&quot;</strong>, abre cualquiera para ver su detalle:<ul>
+<li><strong>Resumen</strong>: peso actual y variación, consumo de hoy y <strong>racha</strong>.</li>
+<li><strong>Tendencia de peso</strong> (gráfica ~60 días).</li>
+<li><strong>Adherencia (14 días)</strong>: promedio de kcal y macros vs. meta, días
+registrados y gráfica diaria.</li>
+<li><strong>Fotos de progreso</strong> del cliente.</li>
+<li><strong>Ajustar metas</strong>: fija kcal y macros; reemplazan al estimado y quedan como
+meta vigente (se desactiva el modo adaptable para no pisarlas).</li>
+<li><strong>Mensajes</strong> con el cliente.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2>16. Mensajes</h2>
+<p>Tú y tu nutricionista pueden escribirse dentro de la app.</p>
+<ul>
+<li><strong>Cliente</strong>: abre <strong>Mensajes</strong> (desde Ajustes → Tu nutricionista →
+&quot;Mensajes con tu nutri&quot;).</li>
+<li><strong>Coach</strong>: el chat está en el detalle de cada cliente.</li>
+<li>Escribe en el cuadro de texto y pulsa enviar (o <strong>Enter</strong>). Se muestran los
+mensajes con fecha y hora. Si aún no hay conversación, verás &quot;Escribe el
+primero&quot;.</li>
+</ul>
+<hr>
+<h2>17. Ajustes</h2>
+<p>Abre <strong>Ajustes</strong> (engranaje en Inicio). Puedes:</p>
+<ul>
+<li><strong>Perfil y objetivo</strong> — editar nombre, sexo, fecha de nacimiento, estatura,
+nivel de actividad, objetivo, peso meta, intensidad y <strong>modo adaptable</strong>. Ves
+una <strong>vista previa</strong> del nuevo estimado y pulsas <strong>&quot;Guardar y recalcular meta&quot;</strong>.</li>
+<li><strong>Metas a mano (de tu nutricionista)</strong> — si tu nutri te dio números exactos de
+kcal y macros, ponlos aquí. Reemplazan al estimado y <strong>apagan el modo
+adaptable</strong> para no pisarlos.</li>
+<li><strong>Tu nutricionista</strong> — conectar/desconectar a tu coach (ver sección 15).</li>
+<li><strong>Instalar app</strong> y <strong>Recordatorios</strong> (ver sección 18).</li>
+<li><strong>Sesión</strong> — ver tu peso actual y <strong>cerrar sesión</strong>.</li>
+</ul>
+<blockquote>
+<p>Tras cambiar tu objetivo, ve a <strong>&quot;Tu plan&quot;</strong> y pulsa <strong>&quot;Regenerar&quot;</strong> para
+actualizar entreno y recetas.</p>
+</blockquote>
+<hr>
+<h2>18. Recordatorios e instalar la app</h2>
+<h3>Instalar Vital360 (PWA)</h3>
+<p>En <strong>Ajustes → Instalar app</strong>:</p>
+<ul>
+<li>Pulsa <strong>&quot;Instalar app&quot;</strong> para tenerla como una app a pantalla completa.</li>
+<li>En <strong>iPhone/iPad</strong>: en Safari, pulsa <strong>Compartir → &quot;Agregar a inicio&quot;</strong>.</li>
+<li>En Android/escritorio: usa el menú del navegador → &quot;Instalar app&quot;.</li>
+</ul>
+<p>La app también funciona <strong>sin conexión</strong> de forma básica: abre con una pantalla
+de <em>&quot;Estás sin conexión&quot;</em> y muestra lo último que viste; pulsa <strong>&quot;Reintentar&quot;</strong>
+cuando vuelva el internet.</p>
+<h3>Recordatorios push</h3>
+<p>En <strong>Ajustes → Recordatorios</strong>:</p>
+<ul>
+<li>Pulsa <strong>&quot;Activar recordatorios&quot;</strong> y acepta el permiso de notificaciones.</li>
+<li>Recibirás un aviso si llega la tarde y <strong>aún no registraste comida</strong>, para no
+perder tu <strong>racha</strong> 🔥.</li>
+<li>En <strong>iPhone</strong>, primero <strong>instala la app</strong> y actívalos desde la app instalada
+(Safari en pestaña no admite notificaciones push).</li>
+</ul>
+<hr>
+<h2>19. Privacidad, datos y bienestar</h2>
+<ul>
+<li><strong>Tus datos son tuyos.</strong> Cada usuario solo ve lo suyo; las fotos de comida y de
+progreso viven en almacenamiento <strong>privado</strong>. La única excepción es tu
+<strong>nutricionista</strong>, si decides conectarlo (y puedes desconectarlo cuando quieras).</li>
+<li><strong>IA:</strong> Vital360 usa Google Gemini para analizar fotos y generar planes y
+recetas. Evita enviar información sensible que no quieras compartir.</li>
+<li><strong>No es consejo médico.</strong> Las metas y planes son aproximados y editables, y no
+sustituyen a un profesional de la salud.</li>
+<li><strong>Tu bienestar primero 💚.</strong> La app <strong>no</strong> promueve déficits agresivos. Si en
+algún momento sientes angustia con la comida, el peso o el ejercicio, habla con
+un profesional. <strong>Tu salud vale más que cualquier número.</strong></li>
+</ul>
+<p>Encuentras el detalle completo en la página <strong>Términos y política de privacidad</strong>
+(enlace &quot;Términos y privacidad&quot; en las pantallas de acceso).</p>
+<hr>
+<h2>20. Preguntas frecuentes</h2>
+<p><strong>¿La IA cuenta las calorías exactas?</strong>
+No. Es una <strong>estimación de apoyo</strong>. Siempre puedes (y conviene) <strong>editar</strong> los
+gramos y macros antes de guardar.</p>
+<p><strong>¿Quién decide mi meta de calorías?</strong>
+Tu <strong>nutricionista</strong>. La app calcula un estimado inicial (fórmula Mifflin-St
+Jeor) y, si tu nutri te da números exactos, los cargas en <strong>Ajustes → Metas a
+mano</strong>.</p>
+<p><strong>¿Qué es el &quot;modo adaptable&quot;?</strong>
+Si lo activas, tu meta de calorías <strong>se recalcula sola</strong> cuando registras tu peso
+en Progreso. Se desactiva automáticamente si fijas metas a mano (tuyas o de tu
+nutri) para no pisarlas.</p>
+<p><strong>No encuentro un alimento al registrar.</strong>
+Busca en <strong>Open Food Facts</strong>, <strong>escanea el código de barras</strong> o <strong>crea el
+alimento</strong> manualmente. La próxima vez aparecerá en tus recientes/favoritos.</p>
+<p><strong>Cambié mi objetivo, ¿por qué el plan sigue igual?</strong>
+Ve a <strong>&quot;Tu plan&quot;</strong> y pulsa <strong>&quot;Regenerar&quot;</strong> para que la IA actualice entreno,
+consejos y recetas.</p>
+<p><strong>¿Puedo usar la app en varios dispositivos?</strong>
+Sí. Inicia sesión con el mismo correo en cualquier dispositivo.</p>
+<p><strong>¿Cómo conecto a mi nutricionista?</strong>
+En <strong>Ajustes → Tu nutricionista</strong>, genera tu <strong>código</strong> y compártelo. Ver
+sección 15.</p>
+<hr>
+<p><em>Vital360 — nutrición + ejercicio con IA. Cuenta, registra y sugiere dentro de
+tus metas, para quitarte carga, no sumarte presión.</em></p>
+
+</body>
+</html>
