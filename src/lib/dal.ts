@@ -425,6 +425,96 @@ export const getWaterToday = cache(async (): Promise<number> => {
   return (data?.ml as number) ?? 0;
 });
 
+export type WeekFoodSummary = {
+  daysLogged: number;
+  goal: { kcal: number; protein_g: number; carbs_g: number; fat_g: number } | null;
+  avg: { kcal: number; protein_g: number; carbs_g: number; fat_g: number } | null;
+  foods: {
+    name: string;
+    occurrences: number;
+    kcal: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+  }[];
+};
+
+/** Resumen de lo comido en los últimos 7 días (para análisis con IA). */
+export const getWeekFoodSummary = cache(async (): Promise<WeekFoodSummary> => {
+  const user = await getUser();
+  if (!user) return { daysLogged: 0, goal: null, avg: null, foods: [] };
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("food_logs")
+    .select("log_date,food_log_items(name,kcal,protein_g,carbs_g,fat_g)")
+    .eq("user_id", user.id)
+    .gte("log_date", daysAgo(6));
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const rows = (data as any[]) ?? [];
+  const days = new Set<string>();
+  const byFood = new Map<
+    string,
+    { occurrences: number; kcal: number; protein_g: number; carbs_g: number; fat_g: number }
+  >();
+  let tot = { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 };
+
+  for (const log of rows) {
+    const items = log.food_log_items ?? [];
+    if (items.length) days.add(String(log.log_date).slice(0, 10));
+    for (const it of items) {
+      tot = {
+        kcal: tot.kcal + (it.kcal ?? 0),
+        protein_g: tot.protein_g + (it.protein_g ?? 0),
+        carbs_g: tot.carbs_g + (it.carbs_g ?? 0),
+        fat_g: tot.fat_g + (it.fat_g ?? 0),
+      };
+      const key = String(it.name).trim().toLowerCase();
+      const cur = byFood.get(key) ?? {
+        occurrences: 0,
+        kcal: 0,
+        protein_g: 0,
+        carbs_g: 0,
+        fat_g: 0,
+      };
+      cur.occurrences += 1;
+      cur.kcal += it.kcal ?? 0;
+      cur.protein_g += it.protein_g ?? 0;
+      cur.carbs_g += it.carbs_g ?? 0;
+      cur.fat_g += it.fat_g ?? 0;
+      byFood.set(key, cur);
+    }
+  }
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+
+  const daysLogged = days.size;
+  const goalRow = await getActiveGoal();
+  const goal = goalRow
+    ? {
+        kcal: goalRow.kcal_target,
+        protein_g: goalRow.protein_g,
+        carbs_g: goalRow.carbs_g,
+        fat_g: goalRow.fat_g,
+      }
+    : null;
+  const avg = daysLogged
+    ? {
+        kcal: Math.round(tot.kcal / daysLogged),
+        protein_g: Math.round(tot.protein_g / daysLogged),
+        carbs_g: Math.round(tot.carbs_g / daysLogged),
+        fat_g: Math.round(tot.fat_g / daysLogged),
+      }
+    : null;
+
+  const foods = [...byFood.entries()]
+    .map(([name, v]) => ({ name, ...v, kcal: Math.round(v.kcal) }))
+    .sort((a, b) => b.kcal - a.kcal)
+    .slice(0, 18);
+
+  return { daysLogged, goal, avg, foods };
+});
+
 /** Racha de días consecutivos registrando comida + últimos 7 días. */
 export const getLoggingStreak = cache(async (): Promise<Streak> => {
   const user = await getUser();

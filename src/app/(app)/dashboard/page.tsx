@@ -26,8 +26,10 @@ import { DayProgress } from "./day-progress";
 import { TrendChart, type TrendPoint } from "./trend-chart";
 import { WeightMini, type WeightPoint } from "./weight-mini";
 import { WaterCard } from "./water-card";
+import { NutritionCoach } from "./nutrition-coach";
 
 export const metadata: Metadata = { title: "Inicio · Vital360" };
+export const maxDuration = 60; // análisis nutricional con IA
 
 /** Construye una serie continua de los últimos `days` días (0 donde no hay registro). */
 function buildTrend(
@@ -165,6 +167,18 @@ export default async function DashboardPage() {
         </CardHeader>
         <CardContent>
           <WaterCard initial={water} />
+        </CardContent>
+      </Card>
+
+      {/* Coach nutricional IA */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Sparkles className="size-4 text-primary" /> Coach nutricional
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <NutritionCoach />
         </CardContent>
       </Card>
 

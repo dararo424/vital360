@@ -347,6 +347,49 @@ ${mealsSummary}`;
   return result.response.text();
 }
 
+const insightSchema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    summary: { type: SchemaType.STRING },
+    tips: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+  },
+  required: ["summary", "tips"],
+};
+
+/**
+ * Analiza el consumo de la semana vs las metas y devuelve consejos accionables
+ * sobre los alimentos reales del usuario. Devuelve texto crudo (JSON).
+ */
+export async function nutritionInsightRaw(brief: string): Promise<string> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY no configurada");
+
+  const prompt = `Eres un asistente de nutrición cercano y empático. Analiza el consumo del usuario frente a sus metas y dale ayuda PRÁCTICA.
+Reglas:
+- En "summary" (1-2 frases amables) identifica el patrón principal (ej. exceso de grasa, déficit de proteína).
+- En "tips" da 2 o 3 consejos ACCIONABLES y ESPECÍFICOS mencionando los ALIMENTOS REALES que come (qué reducir, aumentar o sustituir y por cuál). Ej: "Estás alto en grasa por el aguacate y el queso; prueba media porción de aguacate" o "Te falta proteína; suma huevo, pollo o yogur griego".
+- Tono de APOYO, sin culpa ni restricción extrema. No recomiendes bajar de las calorías meta.
+- Si va bien alineado con las metas, felicítalo y da 1-2 tips de mantenimiento.
+- Español de Colombia, breve y directo.
+Responde SOLO JSON: { "summary": string, "tips": string[] }.
+
+DATOS:
+${brief}`;
+
+  const genAI = new GoogleGenerativeAI(key);
+  const model = genAI.getGenerativeModel({
+    model: MODEL,
+    generationConfig: {
+      responseMimeType: "application/json",
+      // @ts-expect-error responseSchema acepta este shape en runtime
+      responseSchema: insightSchema,
+      temperature: 0.5,
+    },
+  });
+  const result = await model.generateContent(prompt);
+  return result.response.text();
+}
+
 /** Quita fences de markdown por si el modelo los añade pese al responseMimeType. */
 export function stripJsonFences(text: string): string {
   return text
