@@ -1,13 +1,15 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Dumbbell,
   LayoutDashboard,
   LineChart,
+  Loader2,
   PlusCircle,
   UtensilsCrossed,
+  type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,24 +36,7 @@ export function BottomNav() {
                 aria-current={active ? "page" : undefined}
                 className="flex flex-col items-center gap-1 py-1.5 text-[11px]"
               >
-                <span
-                  className={cn(
-                    "flex items-center justify-center rounded-full px-4 py-1 transition-all",
-                    active
-                      ? "bg-primary/12 text-primary"
-                      : "text-muted-foreground"
-                  )}
-                >
-                  <Icon className={cn("size-5 transition-transform", active && "scale-110")} />
-                </span>
-                <span
-                  className={cn(
-                    "transition-colors",
-                    active ? "font-medium text-primary" : "text-muted-foreground"
-                  )}
-                >
-                  {label}
-                </span>
+                <NavInner active={active} Icon={Icon} label={label} />
               </Link>
             </li>
           );
@@ -60,5 +45,43 @@ export function BottomNav() {
       {/* Respeta el safe-area inferior en iOS */}
       <div className="h-[env(safe-area-inset-bottom)]" />
     </nav>
+  );
+}
+
+/** Contenido del ítem: muestra spinner mientras esa navegación está en curso. */
+function NavInner({
+  active,
+  Icon,
+  label,
+}: {
+  active: boolean;
+  Icon: LucideIcon;
+  label: string;
+}) {
+  const { pending } = useLinkStatus();
+  const on = active || pending;
+  return (
+    <>
+      <span
+        className={cn(
+          "flex items-center justify-center rounded-full px-4 py-1 transition-all",
+          on ? "bg-primary/12 text-primary" : "text-muted-foreground"
+        )}
+      >
+        {pending ? (
+          <Loader2 className="size-5 animate-spin" />
+        ) : (
+          <Icon className={cn("size-5 transition-transform", active && "scale-110")} />
+        )}
+      </span>
+      <span
+        className={cn(
+          "transition-colors",
+          on ? "font-medium text-primary" : "text-muted-foreground"
+        )}
+      >
+        {label}
+      </span>
+    </>
   );
 }
