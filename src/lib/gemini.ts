@@ -83,6 +83,36 @@ export async function analyzeImageRaw(
   return result.response.text();
 }
 
+const TEXT_PROMPT = `Eres un asistente de nutrición. El usuario describe en lenguaje natural lo que comió (en español, posiblemente con porciones aproximadas o medidas caseras).
+Identifica cada alimento, estima su cantidad en gramos y sus macros.
+Responde SOLO con JSON (sin markdown) con este formato exacto:
+{ "items": [ { "name": string, "estimated_grams": number, "kcal": number, "protein_g": number, "carbs_g": number, "fat_g": number, "fiber_g": number, "confidence": number } ] }
+Reglas:
+- Interpreta medidas caseras a gramos (ej. "una taza de arroz" ≈ 150 g, "un huevo" ≈ 50 g, "dos arepas" ≈ 2×80 g).
+- "name" en español, conciso. Separa cada alimento en su propio ítem.
+- Cantidades y macros son ESTIMACIONES; si no estás seguro, baja el "confidence" (0 a 1).
+- Si el texto no describe comida, devuelve { "items": [] }.`;
+
+/** Interpreta una descripción de texto de lo comido y devuelve JSON crudo. */
+export async function analyzeTextRaw(description: string): Promise<string> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY no configurada");
+
+  const genAI = new GoogleGenerativeAI(key);
+  const model = genAI.getGenerativeModel({
+    model: MODEL,
+    generationConfig: {
+      responseMimeType: "application/json",
+      // @ts-expect-error responseSchema acepta este shape en runtime
+      responseSchema,
+      temperature: 0.3,
+    },
+  });
+
+  const result = await model.generateContent(`${TEXT_PROMPT}\n\nDESCRIPCIÓN DEL USUARIO:\n${description}`);
+  return result.response.text();
+}
+
 const recipeResponseSchema = {
   type: SchemaType.OBJECT,
   properties: {

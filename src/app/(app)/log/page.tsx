@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Camera, Pencil } from "lucide-react";
+import { Camera, Mic, Pencil } from "lucide-react";
 import {
   getActiveGoal,
   getFavoriteFoods,
@@ -10,8 +10,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ManualLog } from "./manual-log";
 import { PhotoLog } from "./photo-log";
+import { TextLog } from "./text-log";
 
 export const metadata: Metadata = { title: "Registrar · Vital360" };
+export const maxDuration = 60; // interpretación de texto con IA
 
 export default async function LogPage() {
   await requireOnboarded();
@@ -49,8 +51,11 @@ export default async function LogPage() {
         )}
       </header>
 
-      <Tabs defaultValue="foto">
+      <Tabs defaultValue="hablar">
         <TabsList className="w-full">
+          <TabsTrigger value="hablar" className="flex-1">
+            <Mic /> Hablar
+          </TabsTrigger>
           <TabsTrigger value="foto" className="flex-1">
             <Camera /> Foto
           </TabsTrigger>
@@ -58,6 +63,9 @@ export default async function LogPage() {
             <Pencil /> Manual
           </TabsTrigger>
         </TabsList>
+        <TabsContent value="hablar" className="mt-4">
+          <TextLog />
+        </TabsContent>
         <TabsContent value="foto" className="mt-4">
           <PhotoLog />
         </TabsContent>

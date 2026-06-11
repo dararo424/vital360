@@ -1,6 +1,6 @@
 "use server";
 
-import { analyzeImageRaw, stripJsonFences } from "@/lib/gemini";
+import { analyzeImageRaw, analyzeTextRaw, stripJsonFences } from "@/lib/gemini";
 import { getUser } from "@/lib/dal";
 import { checkAiLimit, isQuotaError } from "@/lib/rate-limit";
 import { analyzeResultSchema, type AnalyzedItem } from "@/lib/types";
@@ -67,5 +67,55 @@ export async function analyzeMealPhoto(
   }
 
   // Guardamos el JSON crudo parseado para persistirlo en food_logs.ai_raw.
+  return { ok: true, items: result.data.items, raw: result.data };
+}
+
+/**
+ * Interpreta una descripción en lenguaje natural ("comí dos arepas con huevo")
+ * y devuelve ítems estimados para EDITAR antes de guardar.
+ */
+export async function analyzeMealText(text: string): Promise<AnalyzeResult> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Sesión expirada. Inicia sesión." };
+
+  const description = text.trim();
+  if (description.length < 3) {
+    return { ok: false, error: "Describe lo que comiste." };
+  }
+
+  const lim = await checkAiLimit("analyze");
+  if (!lim.ok) return { ok: false, error: lim.error! };
+
+  let rawText: string;
+  try {
+    rawText = await analyzeTextRaw(description.slice(0, 600));
+  } catch (e) {
+    console.error("Gemini error:", e);
+    return {
+      ok: false,
+      error: isQuotaError(e)
+        ? "La IA está sin cuota por ahora. Intenta más tarde o usa el registro manual."
+        : "No se pudo interpretar. Usa el registro manual.",
+    };
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stripJsonFences(rawText));
+  } catch {
+    return { ok: false, error: "La IA devolvió un formato inesperado. Usa el manual." };
+  }
+
+  const result = analyzeResultSchema.safeParse(parsed);
+  if (!result.success) {
+    return { ok: false, error: "La IA devolvió datos incompletos. Usa el manual." };
+  }
+  if (result.data.items.length === 0) {
+    return {
+      ok: false,
+      error: "No reconocí alimentos en tu descripción. Intenta ser más específico.",
+    };
+  }
+
   return { ok: true, items: result.data.items, raw: result.data };
 }
